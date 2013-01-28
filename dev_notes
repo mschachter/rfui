@@ -1,0 +1,40 @@
+%%%%%%%%%%%%%%%%%%%%
+Coding Standards
+%%%%%%%%%%%%%%%%%%%%
+0)
+column width of editor should be set to 120 characters
+
+1)
+make sure to 'clear all' ('clear' will not do it) when editing and testing classes to ensure proper reload of class methods and persistent data
+
+2) 
+-Class names should be capitalized. e.g. ExpData for a class that hold experimental data
+-function and variable names should be in camelcase case. e.g. readTheData.m and myLocalVariable
+-variable names should indicate the function of the variable. E.g. no 'for (ii =
+ 1:10)', but instead 'for (trialCounter = 1:10)'
+
+3)
+if necessary to clear ambiguity, use the following postfix to identify type of variable (I started using it everywhere but it quickly became a pain and hard to read):
+D - double (E.g. spikeRateD, for a variable that represents spike rate as a double)
+S - single
+I - integer
+C - character
+L - logical
+Ar - an array (E.g. 'DAr' for a double array);
+Cr - cell array
+Str - string
+?? - class instance. For class variables use all the capitol letters. E.g. myLocalED for an instance of ExpData.
+
+4)
+Always define the atributes in a class, no defaults (E.g. SetAccess = public, even though this is the default)
+
+5)
+use 'its' prefix for properties that are private, and may have the same name as a public property.
+
+6) 
+use dependent variables, private versions, and get.functions for lazy evaluation
+
+see :
+http://www.mathworks.com/help/matlab/matlab_oop/class-attributes.html
+http://www.mathworks.com/help/matlab/matlab_oop/property-attributes.html
+http://www.mathworks.com/help/matlab/matlab_oop/method-attributes.html
