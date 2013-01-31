@@ -178,7 +178,7 @@ classdef SpikeData < handle
                 filter = sdfAlpha(obj.itsSpikeRateFilterWidth, obj.itsSamplingResolution);
                 
             else
-                error('no such "spikeRateType", valid parameters are "MovingAverage", "Gaussian", "Alpha"');
+                error('no such ''spikeRateType'', valid parameters are ''MovingAverage'', ''Gaussian'', ''Alpha''');
             end
             obj.itsSpikeRate = conv(obj.itsSpikeCount, filter, 'same');
         end

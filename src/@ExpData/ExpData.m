@@ -46,6 +46,7 @@ classdef ExpData < handle
     properties (GetAccess = public, SetAccess = private)
         fileName = '';
         samplingRate = 0;
+        recordingTime = [];
     end
     
     %#########################################################################
@@ -122,23 +123,35 @@ classdef ExpData < handle
     methods (Access = public)
         %get the data for a variable by name
         function ret = getVarByName(obj, varNameStr)
+            if (~obj.varDataMap.isKey(varNameStr))
+                error('No such variable name');
+            end
             ret = obj.varDataMap(varNameStr);
         end
         
         %get the data for a cell by name
         function ret = getCellByName(obj, cellNameStr)
+            if (~obj.varDataMap.isKey(cellNameStr))
+                error('No such cell name');
+            end
             ret = obj.cellDataMap(cellNameStr);
         end
         
         %get the data for a variable by number
         function ret = getVarByNum(obj, varNum)
             keys = obj.varDataMap.keys();
+            if (varNum > length(keys))
+                error ('variable number out of range, check ''variableCount''');
+            end
             ret = obj.varDataMap(keys{varNum});
         end
         
         %get the data for a cell by number
         function ret = getCellByNum(obj, cellNum)
             keys = obj.cellDataMap.keys();
+            if (cellNum > length(keys))
+                error ('cell number out of range, check ''cellCount''');
+            end
             ret = obj.cellDataMap(keys{cellNum});
         end
         
@@ -148,9 +161,14 @@ classdef ExpData < handle
                 error(['function requires the object (if not using . notation),'...
                     'variable name, and filter width in seconds']);
             end
-            filter = ones(1, floor(filterWidth*obj.samplingRate));
-            filter = filter ./ length(filter);            
-            ret = conv(obj.varDataMap(varNameStr), filter, 'same');    
+            
+            if (~obj.varDataMap.isKey(varNameStr))
+                error('No such variable name');
+            end
+            
+            var = obj.varDataMap(varNameStr);
+            ret = filterVariable(obj, var, filterWidth);
+            
         end
         
         %return a smoothed variable by number
@@ -159,10 +177,8 @@ classdef ExpData < handle
                 error(['function requires the object (if not using . notation),'...
                     'variable number, and filter width in seconds']);
             end
-            filter = ones(1, floor(filterWidth*obj.samplingRate));
-            filter = filter ./ length(filter);            
-            keys = obj.varDataMap.keys();
-            ret = conv(obj.varDataMap(keys{varNum}), filter, 'same');    
+            var = getVarByNum(obj, varNum);
+            ret = filterVariable(obj, var, filterWidth);
         end
     end
     
@@ -196,6 +212,13 @@ classdef ExpData < handle
                 cell.spikeRateType = obj.cellSpikeRateType;
             end
         end
+            
+        %filter a variable
+        function ret = filterVariable(obj, var, filterWidth)
+            filter = ones(1, floor(filterWidth*obj.samplingRate));
+            filter = filter ./ length(filter);            
+            ret = conv(var, filter, 'same');     
+        end
     end
         
     %#########################################################################
@@ -219,7 +242,7 @@ classdef ExpData < handle
             readDataFromFile(newED, dataFileNameStr, cellExprStr);
             
             %set the sampling rate
-            newED.samplingRate = ceil(1 / mean(diff(getVarByName(newED, 'Recording time'))));
+            newED.samplingRate = (1 / mean(diff(getVarByName(newED, 'Recording time'))));
             
             %propogate default in ExpData to all the cell's
             updateSpikeSamplingRes(newED);

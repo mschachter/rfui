@@ -18,7 +18,9 @@ function readDataFromFile(obj, filePathStr, cellExprStr)
     for (colNum = 1:length(allData.colheaders))
         cName = allData.colheaders{colNum};
         if (strcmpi(cName, 'Recording time'))
-            startTime = allData.data(1, colNum);
+            obj.recordingTime = allData.data(:, colNum);
+            startTime = obj.recordingTime(1);
+            
         end
     end
     

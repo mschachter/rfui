@@ -3,7 +3,7 @@
 %
 %A class to fit data with a cubic spline and compute goodness-of-fit.
 %
-% example :
+% example : see test/testCSFit.m
 %#########################################################################
 classdef CSFit < handle 
     
@@ -55,7 +55,7 @@ classdef CSFit < handle
                 end
             end
             obj.itsSplineFunc = csaps(obj.X, obj.Y, p);                                    
-            obj.computeR2();            
+            obj.computeR2;            
         end
 
         %compute the R^2 of the data
@@ -72,7 +72,6 @@ classdef CSFit < handle
         end
         
     end       
-    
     
     %#########################################################################
     %private properties
@@ -92,7 +91,6 @@ classdef CSFit < handle
         itsSplineFunc = [];
     end
     
-    
     %#########################################################################
     %public methods methods
     %#########################################################################
@@ -105,8 +103,7 @@ classdef CSFit < handle
             end
             Ypred = fnval(obj.itsSplineFunc, x);   
         end
-     end
-        
+    end
     
     %#########################################################################
     %constructor/destructor
@@ -127,11 +124,7 @@ classdef CSFit < handle
             end
             if nargin >= 4
                 newCS.itsMethodParameters = methodParameters;
-            end
-            
-            
-                
-                
+            end 
         end
     end
     
