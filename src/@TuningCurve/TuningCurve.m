@@ -208,7 +208,7 @@ classdef TuningCurve < handle
                     figure(currentFig); hold on;
                     subplot(obj.numSubplots(1), obj.numSubplots(2), spNum); 
                 else
-                    figure(baseFig);
+                    figure(baseFig + cellNum - 1);
                 end                
                     
                 if (strcmpi(obj.plotType, 'normal'))
