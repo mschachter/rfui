@@ -48,6 +48,13 @@ classdef TuningCurve < handle
         
         %the plot type : normal, semilogx
         plotType = 'semilogx'
+        
+        %plot all in subplots
+        useSubplots = 0;
+        
+        %number of subplots (rows, cols) per figure
+        numSubplots = [6, 7];
+        
     end
     
     %#########################################################################
@@ -71,6 +78,12 @@ classdef TuningCurve < handle
         
         %smooth the variable of interest with a filter this wide in seconds
         itsFilterWidth = 1;
+        
+        %spline type
+        itsSplineType = 'natural';
+        
+        %spline parameters
+        itsSplineParams = containers.Map();
         
         %flag variables
         updateData = 1
@@ -176,20 +189,39 @@ classdef TuningCurve < handle
                 cellsToPlot = 1:obj.expData.cellCount;
             end
             
+            %set up number of figures and plots per figure
+            numFigures = 1;
+            numPlotsPerFig = 1;
+            baseFig = figure();
+            if obj.useSubplots && length(cellsToPlot) > 1
+                numPlotsPerFig = obj.numSubplots(1)*obj.numSubplots(2);
+                numFigures = ceil(length(cellsToPlot) / numPlotsPerFig);
+            end
+            
             %plot binned variable vs average spike rate
-            for (figNum = 1:length(cellsToPlot))
-                figure(cellsToPlot(figNum));
+            for (cellNum = 1:length(cellsToPlot))
+                
+                %get the current figure and subplot numbers
+                if obj.useSubplots && length(cellsToPlot) > 1
+                    currentFig = ceil(cellNum / numPlotsPerFig) - 1 + baseFig;
+                    spNum = mod(cellNum, numPlotsPerFig);
+                    figure(currentFig); hold on;
+                    subplot(obj.numSubplots(1), obj.numSubplots(2), spNum); 
+                else
+                    figure(baseFig);
+                end                
+                    
                 if (strcmpi(obj.plotType, 'normal'))
-                    h = plot(obj.binnedVariable, obj.averageSpikeRate(cellsToPlot(figNum),:), 'o');
+                    h = plot(obj.binnedVariable, obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
                 elseif (strcmpi(obj.plotType, 'semilogx'))
-                    h = semilogx(obj.binnedVariable, obj.averageSpikeRate(cellsToPlot(figNum),:), 'o');
+                    h = semilogx(obj.binnedVariable, obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
                 else
                     error('Not a valid plot type. Valid types are ''normal'', and ''semilogx''');
                 end
                 set(h,'MarkerEdgeColor','none','MarkerFaceColor',[.5 .5 .5])
                 
                 %plot spline fit
-                currSpline = obj.splineFits(cellsToPlot(figNum));
+                currSpline = obj.splineFits(cellsToPlot(cellNum));
                 xx = obj.binnedVariable(1):.01:obj.binnedVariable(end);
                 yy = currSpline.eval(xx);
                 hold on;
@@ -257,8 +289,25 @@ classdef TuningCurve < handle
             %perform spline fit
             obj.itsSplineFits = CSFit.empty(0,obj.expData.cellCount);
             for (cellNum = 1:obj.expData.cellCount)
-                obj.itsSplineFits(cellNum) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellNum, :), 'natural');
+                obj.itsSplineFits(cellNum) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellNum, :), obj.itsSplineType, obj.itsSplineParams);
             end
+        end
+    end
+    
+    %#########################################################################
+    %constructor/destructor
+    %#########################################################################
+    methods (Access = public)
+        %create a new SpikeData object from spike times, assuming units are in seconds.
+        function newTC = TuningCurve(splineType, splineP)            
+            if nargin >= 1               
+                newTC.itsSplineType = splineType;                
+            end
+            if nargin >= 2
+                sp = containers.Map();
+                sp('p') = splineP;
+                newTC.itsSplineParams = sp;
+            end            
         end
     end
         

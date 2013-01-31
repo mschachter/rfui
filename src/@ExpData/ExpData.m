@@ -85,12 +85,12 @@ classdef ExpData < handle
         
         %called when variableCount is accessed
         function ret = get.variableCount(obj)
-            ret = obj.varDataMap.Count;
+            ret = int32(obj.varDataMap.Count);
         end
         
         %called when cellNames is accessed
         function ret = get.cellCount(obj)
-            ret = obj.cellDataMap.Count;
+            ret = int32(obj.cellDataMap.Count);
         end
     end 
     
