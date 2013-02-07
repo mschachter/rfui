@@ -19,6 +19,12 @@ classdef CSFit < handle
         
         %R^2 of fit
         R2
+        
+        %the spline function
+        splineFunc
+        
+        %the spline type
+        splineType
     end
     
     %#########################################################################
@@ -37,7 +43,23 @@ classdef CSFit < handle
         
         %called when R2 is accessed
         function ret = get.R2(obj)
+            if isempty(obj.itsSplineFunc)
+                obj.fitData();
+            end
             ret = obj.itsR2;
+        end
+        
+        %called when splineFunc is accessed
+        function ret = get.splineFunc(obj)
+            if isempty(obj.itsSplineFunc)
+                obj.fitData();
+            end
+            ret = obj.itsSplineFunc;
+        end
+        
+        %called when splineType is accessed
+        function ret = get.splineType(obj)
+            ret = obj.itsSplineType;
         end
     end
     

@@ -23,6 +23,9 @@ classdef TuningCurve < handle
         
         %the spline fits for each cell
         splineFits
+        
+        %the peak firing rate of the tuning curve
+        peakRate
     end
     
     %#########################################################################
@@ -69,6 +72,9 @@ classdef TuningCurve < handle
         
         %the spline fits for each cell
         itsSplineFits = []
+        
+        %the peak firing rate of the tuning curve
+        itsPeakRate = []
         
         %number of bins for computation
         itsNumBins = 20
@@ -147,6 +153,15 @@ classdef TuningCurve < handle
                 obj.updateData = 0;
             end
             ret = obj.itsSplineFits;
+        end
+        
+        %called when peakRate is accessed
+        function ret = get.peakRate(obj)
+            if (obj.updateData)
+                computeTuningCurve(obj);
+                obj.updateData = 0;
+            end
+            ret = obj.itsPeakRate;
         end
         
         %called when numBins is accessed
@@ -286,11 +301,50 @@ classdef TuningCurve < handle
             obj.itsBinnedVariable = fliplr(obj.itsBinnedVariable);
             obj.itsAverageSpikeRate = fliplr(obj.itsAverageSpikeRate);
             
-            %perform spline fit
+            
+            %for each cell, compute the spline
+            obj.itsPeakRate = zeros(1, obj.expData.cellCount);
             obj.itsSplineFits = CSFit.empty(0,obj.expData.cellCount);
             for (cellNum = 1:obj.expData.cellCount)
+                %perform spline fit
                 obj.itsSplineFits(cellNum) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellNum, :), obj.itsSplineType, obj.itsSplineParams);
-            end
+                
+                %get the current spline for determine the peak firing rate
+                %off the spline fit
+                currSpline = obj.itsSplineFits(cellNum);
+                currSpline = currSpline.splineFunc;
+                
+                %first, compute first derivitive of the spline
+                dCs = currSpline;
+                dCs.order = currSpline.order-1;
+                dCs.coefs = bsxfun(@times, currSpline.coefs(:,1:end-1), dCs.order:-1:1);
+                
+                %identify all the zero crossings (potentially at each knot,
+                %and at the zeros of a cubic where 3ax^2 + 2bx + cx = 0)
+                coefs = dCs.coefs;
+                offset1 = -(coefs(:,2) + (coefs(:,2).^2 - 4.*coefs(:,1).*coefs(:,3)).^.5)./(2.*coefs(:,1));
+                offset2 = -(coefs(:,2) - (coefs(:,2).^2 - 4.*coefs(:,1).*coefs(:,3)).^.5)./(2.*coefs(:,1));
+                pos = [obj.itsBinnedVariable,obj.itsBinnedVariable(1:end-1)+offset1',obj.itsBinnedVariable(1:end-1)+offset2'];
+                pos(imag(pos) ~= 0) = [];
+                pos((pos < obj.itsBinnedVariable(1)) | (pos > obj.itsBinnedVariable(end))) = [];       
+                zc = fnval(dCs, pos);
+                idx = find(abs(zc) < 10^-10);
+                zc = pos(idx);
+                
+                %the max firing rate is either a zero crossing or an
+                %endpoint
+                zc = [zc, obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
+                mx = fnval(currSpline, zc);
+                [mx,mxpos] = max(mx);
+                mxpos = zc(mxpos);
+                obj.itsPeakRate(cellNum) = mx;
+                
+                figure;
+                xx = obj.itsBinnedVariable(1):.001:obj.itsBinnedVariable(end);
+                semilogx(xx, fnval(currSpline, xx));
+                hold on; semilogx(mxpos, mx,'o');hold off;
+                pause;
+            end%end loop over cells
         end
     end
     
