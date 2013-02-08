@@ -5,8 +5,9 @@
 %an electrode array in a single experimental session
 %
 % example:
-% tc = TuningCurve;
-% tc.expData = ExpData('../../data/data2.csv', 'sig*');
+% tc = TuningCurve('smoothing', .5);
+% tc.expData = ExpData('../../data/data1.csv', 'sig[0-9]*[a-b]*');
+% tc.useSubplots = 1;
 % tc.plotTuningCurve
 %#########################################################################
 classdef TuningCurve < handle 
@@ -40,6 +41,10 @@ classdef TuningCurve < handle
         
         %smooth the variable of interest with a filter this wide in seconds
         filterWidth
+        
+        %apply an offset to the data by subtracting this value from the spike
+        %times
+        timeOffset
     end
     
     %#########################################################################
@@ -56,8 +61,16 @@ classdef TuningCurve < handle
         useSubplots = 0;
         
         %number of subplots (rows, cols) per figure
-        numSubplots = [6, 7];
+        numSubplots = [6, 6];
         
+    end
+    
+    %#########################################################################
+    %read-only properties
+    %#########################################################################
+    properties (GetAccess = public, SetAccess = private)
+       %flag variables
+        updateData = 1; 
     end
     
     %#########################################################################
@@ -85,14 +98,15 @@ classdef TuningCurve < handle
         %smooth the variable of interest with a filter this wide in seconds
         itsFilterWidth = 1;
         
+        %apply an offset to the data by adding this value to the spike
+        %times
+        itsTimeOffset = 0;
+        
         %spline type
         itsSplineType = 'natural';
         
         %spline parameters
         itsSplineParams = containers.Map();
-        
-        %flag variables
-        updateData = 1
     end
     
     %#########################################################################
@@ -109,17 +123,25 @@ classdef TuningCurve < handle
         
         %called when expVariable is set
         function set.expVariable(obj, value)
-            if (~strcmpi(obj.expVariable,value))
+            if (~strcmpi(obj.itsExpVariable,value))
                 obj.updateData = 1;
-                obj.expData = value;
+                obj.itsExpVariable = value;
             end
         end
         
         %called when filterWidth is set
         function set.filterWidth(obj, value)
-            if (obj.filterWidth ~= value)
+            if (obj.itsFilterWidth ~= value)
                 obj.updateData = 1;
                 obj.itsFilterWidth = value;
+            end
+        end
+        
+        %called when timeOffset is set
+        function set.timeOffset(obj, value)
+            if (obj.itsTimeOffset ~= value)
+                obj.updateData = 1;
+                obj.itsTimeOffset = value;
             end
         end
     end
@@ -164,6 +186,15 @@ classdef TuningCurve < handle
             ret = obj.itsPeakRate;
         end
         
+        %called when timeOffset is accessed
+        function ret = get.timeOffset(obj)
+            if (obj.updateData)
+                computeTuningCurve(obj);
+                obj.updateData = 0;
+            end
+            ret = obj.itsTimeOffset;
+        end
+        
         %called when numBins is accessed
         function ret = get.numBins(obj) 
            ret = obj.itsNumBins; 
@@ -205,23 +236,24 @@ classdef TuningCurve < handle
             end
             
             %set up number of figures and plots per figure
-            numFigures = 1;
             numPlotsPerFig = 1;
             baseFig = figure();
             if obj.useSubplots && length(cellsToPlot) > 1
                 numPlotsPerFig = obj.numSubplots(1)*obj.numSubplots(2);
-                numFigures = ceil(length(cellsToPlot) / numPlotsPerFig);
             end
             
+            spNum = 1;
             %plot binned variable vs average spike rate
             for (cellNum = 1:length(cellsToPlot))
-                
                 %get the current figure and subplot numbers
                 if obj.useSubplots && length(cellsToPlot) > 1
                     currentFig = ceil(cellNum / numPlotsPerFig) - 1 + baseFig;
-                    spNum = mod(cellNum, numPlotsPerFig);
+                    if (spNum > numPlotsPerFig)
+                        spNum = 1;
+                    end
                     figure(currentFig); hold on;
                     subplot(obj.numSubplots(1), obj.numSubplots(2), spNum); 
+                    spNum = spNum + 1;
                 else
                     figure(baseFig + cellNum - 1);
                 end                
@@ -230,6 +262,8 @@ classdef TuningCurve < handle
                     h = plot(obj.binnedVariable, obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
                 elseif (strcmpi(obj.plotType, 'semilogx'))
                     h = semilogx(obj.binnedVariable, obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
+                    %h = plot(log10(obj.binnedVariable+1), obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
+                    %set(gca, 'xtick', obj.binnedVariable);
                 else
                     error('Not a valid plot type. Valid types are ''normal'', and ''semilogx''');
                 end
@@ -241,11 +275,12 @@ classdef TuningCurve < handle
                 yy = currSpline.eval(xx);
                 hold on;
                 semilogx(xx, yy,'color',[0 0 0]);
+                %plot(log10(xx+1), yy,'color',[0 0 0]);
                 hold off;
                 
                 %set title
                 r2 = currSpline.R2;
-                title(['$R^2$=', num2str(r2)],'interpreter','latex','fontsize',10);
+                title(['$R^2$=', num2str(round(r2*100)/100)],'interpreter','latex','fontsize',10);
             end
         end
     end
@@ -269,7 +304,7 @@ classdef TuningCurve < handle
             countMat = zeros(obj.expData.cellCount, varLength);
             for (cellNum = 1:obj.expData.cellCount)
                 cell = getCellByNum(obj.expData, cellNum);
-                spikeCount = histc(cell.spikeTimes, obj.expData.recordingTime);
+                spikeCount = histc(cell.spikeTimes-obj.itsTimeOffset, obj.expData.recordingTime);
                 countMat(cellNum, :) = spikeCount(ord);
             end
             
@@ -335,15 +370,7 @@ classdef TuningCurve < handle
                 %endpoint
                 zc = [zc, obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
                 mx = fnval(currSpline, zc);
-                [mx,mxpos] = max(mx);
-                mxpos = zc(mxpos);
-                obj.itsPeakRate(cellNum) = mx;
-                
-                figure;
-                xx = obj.itsBinnedVariable(1):.001:obj.itsBinnedVariable(end);
-                semilogx(xx, fnval(currSpline, xx));
-                hold on; semilogx(mxpos, mx,'o');hold off;
-                pause;
+                obj.itsPeakRate(cellNum) = max(mx);
             end%end loop over cells
         end
     end
@@ -352,7 +379,8 @@ classdef TuningCurve < handle
     %constructor/destructor
     %#########################################################################
     methods (Access = public)
-        %create a new SpikeData object from spike times, assuming units are in seconds.
+        %create a new TuningCurve object given a spline type and spline
+        %parameters if supplied
         function newTC = TuningCurve(splineType, splineP)            
             if nargin >= 1               
                 newTC.itsSplineType = splineType;                
