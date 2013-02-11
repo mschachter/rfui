@@ -31,7 +31,7 @@ classdef InputValidator < handle
             end            
         end
         
-        function value = checkStringAgainstList(obj, inputValue, strList)            
+        function value = checkStringAgainstList(obj, inputValue, strList, defaultValue)            
             if ismember(inputValue, strList)
                 value = inputValue;
             else

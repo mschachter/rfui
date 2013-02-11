@@ -1,5 +1,9 @@
 function s = strjoin(strList, joinChar)
 
+    if nargin < 2
+        joinChar = ',';
+    end
+
     if length(strList) == 0
         s = '';
         return

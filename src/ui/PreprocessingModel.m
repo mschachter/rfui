@@ -6,6 +6,7 @@
 %#########################################################################
 classdef PreprocessingModel < handle 
    
+    
     %#########################################################################
     %read/write properties
     %#########################################################################
@@ -59,7 +60,7 @@ classdef PreprocessingModel < handle
         
         function set.spikeRateWindowType(obj, value)
             v = InputValidator();
-            obj.spikeRateWindowType = v.checkStringAgainstList(value, {'Gaussian', 'Moving Average', 'Alpha'}, 'Gaussian');
+            obj.spikeRateWindowType = v.checkStringAgainstList(value, {'Gaussian', 'MovingAverage', 'Alpha'}, 'Gaussian');
         end
         
         function set.variableNumberOfBins(obj, value)
@@ -89,7 +90,7 @@ classdef PreprocessingModel < handle
                         
         function set.heatmapPositiveLag(obj, value)
             v = InputValidator();
-            obj.heatmapPositiveLag = v.checkNumberAgainstRange(value, -10.0, 0.0, -5.0);
+            obj.heatmapPositiveLag = v.checkNumberAgainstRange(value, 0.0, 10.0, 5.0);
         end
         
     end 
