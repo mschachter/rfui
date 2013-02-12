@@ -22,7 +22,7 @@ function varargout = PreprocessingView(varargin)
 
 % Edit the above text to modify the response to help PreprocessingView
 
-% Last Modified by GUIDE v2.5 10-Feb-2013 16:46:56
+% Last Modified by GUIDE v2.5 12-Feb-2013 13:28:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,6 +57,10 @@ handles.output = hObject;
 % set RFUI model and controllers
 mvcModel = PreprocessingModel();
 handles.mvcModel = mvcModel;
+
+mvcController = PreprocessingController();
+handles.mvcController = mvcController;
+mvcController.updateView(handles, mvcModel);
 
 guidata(hObject, handles);
 
@@ -368,3 +372,15 @@ function SmoothingParameterEdit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in InputFileLoadButton.
+function InputFileLoadButton_Callback(hObject, eventdata, handles)
+% hObject    handle to InputFileLoadButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+mvcController = handles.mvcController;
+mvcModel = handles.mvcModel;
+mvcController.loadExpData(mvcModel);
+mvcController.updateView(handles, mvcModel);

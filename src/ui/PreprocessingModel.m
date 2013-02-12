@@ -11,7 +11,7 @@ classdef PreprocessingModel < handle
     %read/write properties
     %#########################################################################
     properties (GetAccess = public, SetAccess = public)
-        inputFile = '';
+        inputFile = 'Click browse to select file.';
         cellPattern = 'sig*';
         
         spikeRateWindowSize = 0.010;
@@ -25,14 +25,20 @@ classdef PreprocessingModel < handle
         
         heatmapBinSpacing = 0.025;
         heatmapNegativeLag = -5.0;
-        heatmapPositiveLag = 5.0;
+        heatmapPositiveLag = 5.0;        
         
+        sampleRate = -1;
+        
+        variablesOfInterestList = {};
+                
+        cellList = {};        
+        selectedCells = {};
     end
     
     %#########################################################################
-    %private properties
+    %immutable properties
     %#########################################################################
-    properties (GetAccess = private, SetAccess = private)
+    properties (GetAccess = public, SetAccess = private)
         
     end
     
@@ -101,7 +107,6 @@ classdef PreprocessingModel < handle
     methods (Access = public)
         
     end
-    
     
     
     %#########################################################################
