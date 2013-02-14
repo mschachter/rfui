@@ -66,6 +66,7 @@ classdef PreprocessingController < handle
             set(viewHandles.SampleRateText, 'String', sr);
 
             set(viewHandles.CellsToAnalyzeListbox, 'String', preprocModel.cellList);
+            set(viewHandles.CellsToAnalyzeListbox, 'Value', 1:length(preprocModel.cellList));
             
         end
                 
@@ -78,6 +79,13 @@ classdef PreprocessingController < handle
             preprocModel.variableOfInterest = preprocModel.variablesOfInterestList{1};
             preprocModel.cellList = obj.itsExpData.cellNames;
             preprocModel.selectedCells = preprocModel.cellList;
+            
+        end
+        
+        function runPreprocessing(obj, viewHandles, preprocModel)
+            
+            set(viewHandles.PreprocessingView, 'Visible', 'off');
+            ccView = ComputingCurveView(preprocModel, obj.itsExpData);            
             
         end
         

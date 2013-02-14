@@ -298,6 +298,9 @@ function RunPreprocessingButton_Callback(hObject, eventdata, handles)
 % hObject    handle to RunPreprocessingButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+mvcModel = handles.mvcModel;
+mvcController = handles.mvcController;
+mvcController.runPreprocessing(handles, mvcModel);
 
 
 % --- Executes on selection change in CellsToAnalyzeListbox.
