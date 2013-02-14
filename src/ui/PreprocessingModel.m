@@ -20,12 +20,11 @@ classdef PreprocessingModel < handle
         variableOfInterest = '';
         variableNumberOfBins = 20;
         
-        splineType = 'Smoothing';
+        splineType = 'smoothing';
         splineParameter = 0.5;
         
-        heatmapBinSpacing = 0.025;
-        heatmapNegativeLag = -5.0;
-        heatmapPositiveLag = 5.0;        
+        heatmapBinSpacing = 0.100;
+        heatmapNumberOfLags = 50;        
         
         sampleRate = -1;
         
@@ -76,7 +75,7 @@ classdef PreprocessingModel < handle
         
         function set.splineType(obj, value)
             v = InputValidator();
-            obj.splineType = v.checkStringAgainstList(value, {'Smoothing', 'Natural'}, 'Smoothing');
+            obj.splineType = v.checkStringAgainstList(value, {'smoothing', 'natural'}, 'smoothing');
         end
         
         function set.splineParameter(obj, value)
@@ -89,14 +88,9 @@ classdef PreprocessingModel < handle
             obj.heatmapBinSpacing = v.checkNumberAgainstRange(value, 0.001, 5.0, 0.010);
         end
         
-        function set.heatmapNegativeLag(obj, value)
+        function set.heatmapNumberOfLags(obj, value)
             v = InputValidator();
-            obj.heatmapNegativeLag = v.checkNumberAgainstRange(value, -10.0, 0.0, -5.0);
-        end
-                        
-        function set.heatmapPositiveLag(obj, value)
-            v = InputValidator();
-            obj.heatmapPositiveLag = v.checkNumberAgainstRange(value, 0.0, 10.0, 5.0);
+            obj.heatmapNumberOfLags = v.checkNumberAgainstRange(value, 0, 10000, 50);
         end
         
     end 

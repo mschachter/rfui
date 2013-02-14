@@ -16,6 +16,10 @@
 %#########################################################################
 classdef HeatMap < handle 
     
+    events       
+        HeatMapJustFit;        
+    end
+    
     %#########################################################################
     %read-only dependent properties
     %#########################################################################
@@ -252,7 +256,7 @@ classdef HeatMap < handle
     %#########################################################################
     %private methods
     %#########################################################################
-    methods (Access = private)
+    methods (Access = public)
         %compute the heatmap data
         function computeHeatMap(obj)
             if (isempty(obj.itsTuningCurve))
@@ -278,6 +282,9 @@ classdef HeatMap < handle
                     obj.itsHeatMapData(:, lagNum, currCell) = currSpline.eval(xx)';
                 end
                 obj.itsPeakRate(:, lagNum) = tc.peakRate'; % a 1 x cells array of peak firing rates
+                %broadcast event that tuning curve was fit for lag
+                notify(obj,'HeatMapJustFit', HeatMapJustFitEventData(lagNum));
+                
             end
             
             %compute peakRate for each cell and optimal lag

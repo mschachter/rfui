@@ -22,7 +22,7 @@ function varargout = ComputingCurveView(varargin)
 
 % Edit the above text to modify the response to help ComputingCurveView
 
-% Last Modified by GUIDE v2.5 14-Feb-2013 11:25:11
+% Last Modified by GUIDE v2.5 14-Feb-2013 13:32:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,8 +58,6 @@ else
     error('CompuingCurveView takes two input arguments, a PreprocessingModel object and an ExpData object.');
 end
 
-mvcController.compute();
-
 % Choose default command line output for ComputingCurveView
 handles.output = hObject;
 
@@ -68,6 +66,7 @@ guidata(hObject, handles);
 
 % UIWAIT makes ComputingCurveView wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
+
 
 
 % --- Outputs from this function are returned to the command line.
@@ -79,3 +78,5 @@ function varargout = ComputingCurveView_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+mvcController = handles.mvcController;
+mvcController.compute(handles);

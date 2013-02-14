@@ -22,7 +22,7 @@ function varargout = PreprocessingView(varargin)
 
 % Edit the above text to modify the response to help PreprocessingView
 
-% Last Modified by GUIDE v2.5 12-Feb-2013 13:28:01
+% Last Modified by GUIDE v2.5 14-Feb-2013 13:46:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -244,20 +244,20 @@ end
 
 
 
-function NegativeLagEdit_Callback(hObject, eventdata, handles)
-% hObject    handle to NegativeLagEdit (see GCBO)
+function NumberOfLagsEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to NumberOfLagsEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of NegativeLagEdit as text
-%        str2double(get(hObject,'String')) returns contents of NegativeLagEdit as a double
+% Hints: get(hObject,'String') returns contents of NumberOfLagsEdit as text
+%        str2double(get(hObject,'String')) returns contents of NumberOfLagsEdit as a double
 mvcModel = handles.mvcModel;
-mvcModel.heatmapNegativeLag = str2double(get(hObject,'String'));
-set(hObject, 'String', mvcModel.heatmapNegativeLag);
+mvcModel.heatmapNumberOfLags = str2double(get(hObject,'String'));
+set(hObject, 'String', mvcModel.heatmapNumberOfLags);
 
 % --- Executes during object creation, after setting all properties.
-function NegativeLagEdit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to NegativeLagEdit (see GCBO)
+function NumberOfLagsEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to NumberOfLagsEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

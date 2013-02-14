@@ -13,6 +13,13 @@
 classdef TuningCurve < handle 
     
     %#########################################################################
+    %events
+    %#########################################################################
+    events       
+        TuningCurveJustFit;        
+    end
+    
+    %#########################################################################
     %read-only dependent properties
     %#########################################################################
     properties (Dependent = true, GetAccess = public, SetAccess = private)
@@ -288,7 +295,7 @@ classdef TuningCurve < handle
     %#########################################################################
     %private methods
     %#########################################################################
-    methods (Access = private)
+    methods (Access = public)
         %compute the tunning curve data
         function computeTuningCurve(obj)
             if (isempty(obj.expData))
@@ -371,6 +378,10 @@ classdef TuningCurve < handle
                 zc = [zc, obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
                 mx = fnval(currSpline, zc);
                 obj.itsPeakRate(cellNum) = max(mx);
+                
+                %broadcast event that tuning curve was fit for cell
+                notify(obj,'TuningCurveJustFit', TuningCurveJustFitEventData(obj.expData.cellNames{cellNum}, cellNum));
+                
             end%end loop over cells
         end
     end
