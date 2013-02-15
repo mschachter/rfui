@@ -22,7 +22,7 @@ function varargout = ComputingCurveView(varargin)
 
 % Edit the above text to modify the response to help ComputingCurveView
 
-% Last Modified by GUIDE v2.5 14-Feb-2013 13:32:55
+% Last Modified by GUIDE v2.5 15-Feb-2013 11:35:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -65,7 +65,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % UIWAIT makes ComputingCurveView wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% uiwait(handles.ComputingCurveView);
 
 
 
@@ -80,3 +80,4 @@ function varargout = ComputingCurveView_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 mvcController = handles.mvcController;
 mvcController.compute(handles);
+mvcController.showTuningCurveView(handles);

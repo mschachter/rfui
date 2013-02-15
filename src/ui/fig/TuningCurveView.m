@@ -55,11 +55,21 @@ function TuningCurveView_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for TuningCurveView
 handles.output = hObject;
 
+% UIWAIT makes TuningCurveView wait for user response (see UIRESUME)
+% uiwait(handles.TuningCurveView);
+if length(varargin) < 4
+    error('TuningCurveView() takes 4 arguments: expData, preprocModel, tuningCurve, heatmap');    
+else
+    mvcModel = TuningCurveModel();
+    mvcController = TuningCurveController(varargin{1}, varargin{2}, varargin{3}, varargin{4});    
+    mvcController.displayCell(1, mvcModel, handles);
+    handles.mvcModel = mvcModel;
+    handles.mvcController = mvcController;        
+end
+
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes TuningCurveView wait for user response (see UIRESUME)
-% uiwait(handles.TuningCurveView);
 
 
 % --- Outputs from this function are returned to the command line.

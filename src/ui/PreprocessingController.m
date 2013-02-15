@@ -78,15 +78,13 @@ classdef PreprocessingController < handle
             preprocModel.variablesOfInterestList = obj.itsExpData.variableNames;
             preprocModel.variableOfInterest = preprocModel.variablesOfInterestList{1};
             preprocModel.cellList = obj.itsExpData.cellNames;
-            preprocModel.selectedCells = preprocModel.cellList;
+            preprocModel.selectedCells = 1:length(preprocModel.cellList);
             
         end
         
-        function runPreprocessing(obj, viewHandles, preprocModel)
-            
-            set(viewHandles.PreprocessingView, 'Visible', 'off');
-            ccView = ComputingCurveView(preprocModel, obj.itsExpData);            
-            
+        function runPreprocessing(obj, viewHandles, preprocModel)                        
+            close(viewHandles.PreprocessingView);
+            ccView = ComputingCurveView(preprocModel, obj.itsExpData);
         end
         
     end

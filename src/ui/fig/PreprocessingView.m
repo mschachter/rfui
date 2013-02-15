@@ -112,8 +112,10 @@ function SelectFileButton_Callback(hObject, eventdata, handles)
 
 mvcModel = handles.mvcModel;
 [ifile,ipath] = uigetfile('*.*', 'Select an input file');
-mvcModel.inputFile = fullfile(ipath, ifile);
-set(handles.SelectFileText, 'String', ifile);
+if ~isnumeric(ifile)
+    mvcModel.inputFile = fullfile(ipath, ifile);
+    set(handles.SelectFileText, 'String', ifile);
+end
 
 
 function CellPatternEdit_Callback(hObject, eventdata, handles)
@@ -311,6 +313,9 @@ function CellsToAnalyzeListbox_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns CellsToAnalyzeListbox contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from CellsToAnalyzeListbox
+mvcModel = handles.mvcModel;
+mvcController = handles.mvcController;
+mvcModel.selectedCells = get(hObject,'Value');
 
 
 % --- Executes during object creation, after setting all properties.

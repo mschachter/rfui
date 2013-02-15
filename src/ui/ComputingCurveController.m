@@ -23,6 +23,9 @@ classdef ComputingCurveController < handle
         itsHandles = -1;
         itsCellCount = 0;
         itsNumLags = 0;
+        
+        itsTuningCurve = -1;
+        itsHeatMap = -1;
     end
     
     %#########################################################################
@@ -54,8 +57,12 @@ classdef ComputingCurveController < handle
             tc.timeOffset = 0;            
             tc.expData = obj.itsExpData;
             
-            addlistener(tc, 'TuningCurveJustFit', @obj.tuningCurveJustFit);                        
+            tclh = addlistener(tc, 'TuningCurveJustFit', @obj.tuningCurveJustFit);                        
             tc.computeTuningCurve();            
+            delete(tclh);            
+            
+            obj.itsTuningCurve = tc;
+                        
             
             set(viewHandles.StatusText, 'String', 'Computing heatmaps...');            
             
@@ -65,18 +72,29 @@ classdef ComputingCurveController < handle
             hm.numLags = obj.itsPreprocModel.heatmapNumberOfLags;
             obj.itsNumLags = hm.numLags*2 + 1;
             
-            addlistener(hm, 'HeatMapJustFit', @obj.heatmapJustFit);                        
+            hmlh = addlistener(hm, 'HeatMapJustFit', @obj.heatmapJustFit);                        
             hm.computeHeatMap();
+            delete(hmlh);
             
+            obj.itsHeatMap = hm;                        
+        end
+                
+        
+        function showTuningCurveView(obj, viewHandles)        
+            close(viewHandles.ComputingCurveView);
+            tcc = TuningCurveView(obj.itsExpData, obj.itsPreprocModel, obj.itsTuningCurve, obj.itsHeatMap);
         end
         
-        function tuningCurveJustFit(obj, sourceObj, event)
+        
+        function tuningCurveJustFit(obj, sourceObj, event)            
             set(obj.itsHandles.CellText, 'String', sprintf('Cell %d of %d (%s)', event.cellNumber, obj.itsCellCount, event.cellName));
+            drawnow();
         end
         
-        function heatmapJustFit(obj, sourceObj, event)
-            display('heatmapJustFit');
+        
+        function heatmapJustFit(obj, sourceObj, event)                        
             set(obj.itsHandles.CellText, 'String', sprintf('Lag %d of %d', event.lagNumber, obj.itsNumLags));
+            drawnow();
         end                
         
     end

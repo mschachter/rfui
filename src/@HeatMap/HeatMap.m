@@ -188,7 +188,12 @@ classdef HeatMap < handle
     methods (Access = public)
         %plots the heatmap for the specified cell, or if no
         %arguments, for all cells
-        function plotHeatMap(obj, cellNum)
+        function plotHeatMap(obj, cellNum, newFigure)
+            
+            if nargin < 3
+                newFigure = 1;
+            end
+            
             if (isempty(obj.itsTuningCurve))
                 error('the ''tuningCurve'' property must be set before accessing other properties or plotting');
             end
@@ -208,7 +213,9 @@ classdef HeatMap < handle
             
             %set up number of figures and plots per figure
             numPlotsPerFig = 1;
-            baseFig = figure();
+            if newFigure
+                baseFig = figure();
+            end
             if obj.useSubplots && length(cellsToPlot) > 1
                 numPlotsPerFig = obj.numSubplots(1)*obj.numSubplots(2);
             end
@@ -225,7 +232,7 @@ classdef HeatMap < handle
                     figure(currentFig); hold on;
                     subplot(obj.numSubplots(1), obj.numSubplots(2), spNum); 
                     spNum = spNum + 1;
-                else
+                elseif newFigure
                     figure(baseFig + cellNum - 1);
                 end              
                 
