@@ -50,9 +50,10 @@ classdef ComputingCurveController < handle
         function compute(obj, viewHandles)            
             
             obj.itsHandles = viewHandles;
-            obj.itsCellCount = obj.itsExpData.cellCount;
+            obj.itsCellCount = length(obj.itsPreprocModel.selectedCells);
             
             tc = TuningCurve(obj.itsPreprocModel.splineType, obj.itsPreprocModel.splineParameter);
+            tc.selectedCells = obj.itsPreprocModel.selectedCells;
             tc.filterWidth = 1;
             tc.timeOffset = 0;            
             tc.expData = obj.itsExpData;
@@ -61,12 +62,11 @@ classdef ComputingCurveController < handle
             tc.computeTuningCurve();            
             delete(tclh);            
             
-            obj.itsTuningCurve = tc;
-                        
+            obj.itsTuningCurve = tc;                        
             
             set(viewHandles.StatusText, 'String', 'Computing heatmaps...');            
             
-            hm = HeatMap;
+            hm = HeatMap;            
             hm.tuningCurve = tc;
             hm.lagTime = obj.itsPreprocModel.heatmapBinSpacing;
             hm.numLags = obj.itsPreprocModel.heatmapNumberOfLags;

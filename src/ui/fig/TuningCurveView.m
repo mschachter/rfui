@@ -111,6 +111,9 @@ function PreviousCellButton_Callback(hObject, eventdata, handles)
 % hObject    handle to PreviousCellButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+mvcController = handles.mvcController;
+mvcModel = handles.mvcModel;
+mvcController.previousCell(mvcModel, handles);
 
 
 % --- Executes on button press in NextCellButton.
@@ -118,3 +121,6 @@ function NextCellButton_Callback(hObject, eventdata, handles)
 % hObject    handle to NextCellButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+mvcController = handles.mvcController;
+mvcModel = handles.mvcModel;
+mvcController.nextCell(mvcModel, handles);

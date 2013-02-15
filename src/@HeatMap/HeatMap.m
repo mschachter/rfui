@@ -49,7 +49,7 @@ classdef HeatMap < handle
         numLags
         
         %the plot type : normal, semilogx
-        plotType
+        plotType        
     end
     
     %#########################################################################
@@ -189,7 +189,7 @@ classdef HeatMap < handle
         %plots the heatmap for the specified cell, or if no
         %arguments, for all cells
         function plotHeatMap(obj, cellNum, newFigure)
-            
+        
             if nargin < 3
                 newFigure = 1;
             end
@@ -197,6 +197,11 @@ classdef HeatMap < handle
             if (isempty(obj.itsTuningCurve))
                 error('the ''tuningCurve'' property must be set before accessing other properties or plotting');
             end
+            
+            if (obj.updateData)
+                computeHeatMap(obj);
+                obj.updateData = 0;
+            end            
             
             if (nargin > 1)
                 if (cellNum > obj.tuningCurve.expData.cellCount)
@@ -206,9 +211,12 @@ classdef HeatMap < handle
             end
             
             if (nargin > 1)
-                cellsToPlot = cellNum;
+                cellsToPlot = find(obj.tuningCurve.selectedCells == cellNum);   
+                if isempty(cellsToPlot)
+                    error('No heatmap computed for cell number %d', cellNum);
+                end
             else
-                cellsToPlot = 1:obj.tuningCurve.expData.cellCount;
+                cellsToPlot = 1:length(obj.tuningCurve.selectedCells);
             end
             
             %set up number of figures and plots per figure
@@ -221,11 +229,12 @@ classdef HeatMap < handle
             end
             
            spNum = 1;
-            %plot binned variable vs average spike rate
-            for (cellNum = 1:length(cellsToPlot))
+            %plot binned variable vs average spike rate            
+            for cpi = 1:length(cellsToPlot)
+                cellIndex = cellsToPlot(cpi);
                 %get the current figure and subplot numbers
                 if obj.useSubplots && length(cellsToPlot) > 1
-                    currentFig = ceil(cellNum / numPlotsPerFig) - 1 + baseFig;
+                    currentFig = ceil(cellIndex / numPlotsPerFig) - 1 + baseFig;
                     if (spNum > numPlotsPerFig)
                         spNum = 1;
                     end
@@ -233,7 +242,7 @@ classdef HeatMap < handle
                     subplot(obj.numSubplots(1), obj.numSubplots(2), spNum); 
                     spNum = spNum + 1;
                 elseif newFigure
-                    figure(baseFig + cellNum - 1);
+                    figure(baseFig + cpi - 1);
                 end              
                 
                 xx = obj.itsLagTime : obj.itsLagTime : obj.itsNumLags*obj.itsLagTime;
@@ -245,7 +254,7 @@ classdef HeatMap < handle
                 end
                     
                 %plot the data on a normal axis
-                h = imagesc(xx,[],obj.heatMapData(:,:,cellsToPlot(cellNum))); colorbar('EastOutside');
+                h = imagesc(xx,[],obj.heatMapData(:,:,cellIndex)); colorbar('EastOutside');
                 axis xy;
                 
                 currTck = get(gca,'ytick');
@@ -254,8 +263,8 @@ classdef HeatMap < handle
                 tckLabel = round(tckLabel*100)/100;
                 set(gca,'ytick', newTck);
                 set(gca,'yticklabel', tckLabel); 
-                title(['Max: ',num2str(round(obj.peakRate(cellNum)*100)/100), ...
-                    ' Hz at ',num2str(obj.optimalLag(cellNum)),' sec']);
+                title(['Max: ',num2str(round(obj.peakRate(cellIndex)*100)/100), ...
+                    ' Hz at ',num2str(obj.optimalLag(cellIndex)),' sec']);
             end
         end
     end
@@ -274,17 +283,17 @@ classdef HeatMap < handle
             lags = [fliplr(-lags), 0, lags];
             
             tc = obj.itsTuningCurve;
-            obj.itsHeatMapData = zeros(obj.numYAxisBins, length(lags), tc.expData.cellCount);
+            obj.itsHeatMapData = zeros(obj.numYAxisBins, length(lags), length(tc.selectedCells));
             if (strcmpi(obj.itsPlotType,'semilogx'))
                 xx = logspace(log10(tc.binnedVariable(1)),log10(tc.binnedVariable(end)),obj.numYAxisBins);
             else
                 xx = linspace(tc.binnedVariable(1),tc.binnedVariable(end),obj.numYAxisBins);
             end
             
-            obj.itsPeakRate = zeros(tc.expData.cellCount, length(lags));
+            obj.itsPeakRate = zeros(length(tc.selectedCells), length(lags));
             for (lagNum = 1:length(lags))
                 tc.timeOffset = lags(lagNum);
-                for (currCell = 1:tc.expData.cellCount)
+                for (currCell = 1:length(tc.selectedCells))
                     currSpline = tc.splineFits(currCell);
                     obj.itsHeatMapData(:, lagNum, currCell) = currSpline.eval(xx)';
                 end

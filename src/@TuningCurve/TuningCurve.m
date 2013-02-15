@@ -70,6 +70,9 @@ classdef TuningCurve < handle
         %number of subplots (rows, cols) per figure
         numSubplots = [6, 6];
         
+        %cells to compute tuning curves for
+        selectedCells = [];
+        
     end
     
     %#########################################################################
@@ -113,10 +116,7 @@ classdef TuningCurve < handle
         itsSplineType = 'natural';
         
         %spline parameters
-        itsSplineParams = containers.Map();
-        
-        %cells selected to be computed
-        itsSelectedCells = [];
+        itsSplineParams = containers.Map();        
     end
     
     %#########################################################################
@@ -130,13 +130,12 @@ classdef TuningCurve < handle
                 obj.itsNumBins = value;
             end
         end
-        
+                
         %called when expVariable is set
         function set.expVariable(obj, value)
             if (~strcmpi(obj.itsExpVariable,value))
                 obj.updateData = 1;
-                obj.itsExpVariable = value;
-                obj.itsSelectedCells = 1:obj.itsExpVariable.cellCount;
+                obj.itsExpVariable = value;                
             end
         end
         
@@ -230,6 +229,11 @@ classdef TuningCurve < handle
         %arguments, for all cells
         function plotTuningCurve(obj, cellNum, newFigure)
             
+            if (obj.updateData)
+                computeTuningCurve(obj);
+                obj.updateData = 0;
+            end
+            
             if nargin < 3
                 newFigure = 1;
             end
@@ -246,9 +250,12 @@ classdef TuningCurve < handle
             end
             
             if (nargin > 1)
-                cellsToPlot = cellNum;
+                cellsToPlot = find(obj.selectedCells == cellNum);                
+                if isempty(cellsToPlot)
+                    error('No tuning curve computed for cell number %d', cellNum);
+                end
             else
-                cellsToPlot = 1:obj.expData.cellCount;
+                cellsToPlot = 1:length(obj.selectedCells);
             end
             
             %set up number of figures and plots per figure
@@ -261,11 +268,12 @@ classdef TuningCurve < handle
             end
             
             spNum = 1;
-            %plot binned variable vs average spike rate
-            for (cellNum = 1:length(cellsToPlot))
+            %plot binned variable vs average spike rate                        
+            for cpi = 1:length(cellsToPlot)
+                cellIndex = cellsToPlot(cpi);
                 %get the current figure and subplot numbers
                 if obj.useSubplots && length(cellsToPlot) > 1
-                    currentFig = ceil(cellNum / numPlotsPerFig) - 1 + baseFig;
+                    currentFig = ceil(cellIndex / numPlotsPerFig) - 1 + baseFig;
                     if (spNum > numPlotsPerFig)
                         spNum = 1;
                     end
@@ -273,13 +281,13 @@ classdef TuningCurve < handle
                     subplot(obj.numSubplots(1), obj.numSubplots(2), spNum); 
                     spNum = spNum + 1;
                 elseif newFigure
-                    figure(baseFig + cellNum - 1);
+                    figure(baseFig + cpi - 1);
                 end   
                     
                 if (strcmpi(obj.plotType, 'normal'))
-                    h = plot(obj.binnedVariable, obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
+                    h = plot(obj.binnedVariable, obj.averageSpikeRate(cellIndex,:), 'o');
                 elseif (strcmpi(obj.plotType, 'semilogx'))
-                    h = semilogx(obj.binnedVariable, obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
+                    h = semilogx(obj.binnedVariable, obj.averageSpikeRate(cellIndex,:), 'o');
                     %h = plot(log10(obj.binnedVariable+1), obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
                     %set(gca, 'xtick', obj.binnedVariable);
                 else
@@ -288,7 +296,7 @@ classdef TuningCurve < handle
                 set(h,'MarkerEdgeColor','none','MarkerFaceColor',[.5 .5 .5])
                 
                 %plot spline fit
-                currSpline = obj.splineFits(cellsToPlot(cellNum));
+                currSpline = obj.splineFits(cellIndex);
                 xx = obj.binnedVariable(1):.01:obj.binnedVariable(end);
                 yy = currSpline.eval(xx);
                 hold on;
@@ -313,17 +321,24 @@ classdef TuningCurve < handle
                 error('the ''expData'' property must be set before accessing other properties or plotting');
             end
             
+            if isempty(obj.selectedCells)
+                obj.selectedCells = 1:obj.expData.cellCount;
+            end
+            
             %sort the continuous variable
             myVar = smoothVarByName(obj.expData, obj.expVariable, obj.filterWidth);
             [sVar, ord] = sort(myVar, 'descend');
             varLength = length(myVar);
             
+            numCells = length(obj.selectedCells);
+            
             %sort the spike data the same way
-            countMat = zeros(obj.expData.cellCount, varLength);
-            for (cellNum = 1:obj.expData.cellCount)
+            countMat = zeros(numCells, varLength);
+            for cellIndex = 1:numCells
+                cellNum = obj.selectedCells(cellIndex);
                 cell = getCellByNum(obj.expData, cellNum);
                 spikeCount = histc(cell.spikeTimes-obj.itsTimeOffset, obj.expData.recordingTime);
-                countMat(cellNum, :) = spikeCount(ord);
+                countMat(cellIndex, :) = spikeCount(ord);
             end
             
             %compute samples per bin given that each bin has the same amount of data - the last bin will have up to
@@ -332,7 +347,7 @@ classdef TuningCurve < handle
             secPerBin = (samplesPerBin / obj.expData.samplingRate);
             
             obj.itsBinnedVariable = zeros(1, obj.itsNumBins);
-            obj.itsAverageSpikeRate = zeros(obj.expData.cellCount, obj.itsNumBins);
+            obj.itsAverageSpikeRate = zeros(numCells, obj.itsNumBins);
             
             for (binNum = 1:(obj.itsNumBins) - 1)
                 startIdx = ((binNum - 1) * samplesPerBin + 1);
@@ -356,15 +371,16 @@ classdef TuningCurve < handle
             
             
             %for each cell, compute the spline
-            obj.itsPeakRate = zeros(1, obj.expData.cellCount);
-            obj.itsSplineFits = CSFit.empty(0,obj.expData.cellCount);
-            for (cellNum = 1:obj.expData.cellCount)
+            obj.itsPeakRate = zeros(1, length(obj.selectedCells));
+            obj.itsSplineFits = CSFit.empty(0,length(obj.selectedCells));
+            for cellIndex = 1:numCells
+                cellNum = obj.selectedCells(cellIndex);
                 %perform spline fit
-                obj.itsSplineFits(cellNum) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellNum, :), obj.itsSplineType, obj.itsSplineParams);
+                obj.itsSplineFits(cellIndex) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellIndex, :), obj.itsSplineType, obj.itsSplineParams);
                 
                 %get the current spline for determine the peak firing rate
                 %off the spline fit
-                currSpline = obj.itsSplineFits(cellNum);
+                currSpline = obj.itsSplineFits(cellIndex);
                 currSpline = currSpline.splineFunc;
                 
                 %first, compute first derivitive of the spline
@@ -388,10 +404,10 @@ classdef TuningCurve < handle
                 %endpoint
                 zc = [zc, obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
                 mx = fnval(currSpline, zc);
-                obj.itsPeakRate(cellNum) = max(mx);
+                obj.itsPeakRate(cellIndex) = max(mx);
                 
                 %broadcast event that tuning curve was fit for cell
-                notify(obj,'TuningCurveJustFit', TuningCurveJustFitEventData(obj.expData.cellNames{cellNum}, cellNum));
+                notify(obj,'TuningCurveJustFit', TuningCurveJustFitEventData(obj.expData.cellNames{cellNum}, cellIndex));
                 
             end%end loop over cells
         end

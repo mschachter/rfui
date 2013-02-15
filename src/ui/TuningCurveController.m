@@ -47,7 +47,7 @@ classdef TuningCurveController < handle
         
         function previousCell(obj, tcModel, viewHandles)
             if obj.itsNumberOfCells > 1
-                cnext = tcModel.cellIndex + 1;
+                cnext = tcModel.cellIndex - 1;
                 if cnext < 1
                     cnext = obj.itsNumberOfCells;
                 end
@@ -56,16 +56,14 @@ classdef TuningCurveController < handle
         end
         
         
-        function nextCell(obj, tcModel, viewHandles)
-        
+        function nextCell(obj, tcModel, viewHandles)        
             if obj.itsNumberOfCells > 1
                 cnext = tcModel.cellIndex + 1;
                 if cnext > obj.itsNumberOfCells
                     cnext = 1;
                 end
                 obj.displayCell(cnext, tcModel, viewHandles);
-            end
-            
+            end            
         end
         
         
@@ -81,10 +79,10 @@ classdef TuningCurveController < handle
             axes(viewHandles.TuningCurveAxes);
             obj.itsTuningCurve.plotTuningCurve(cellNumber, 0);            
             
-            axes(viewHandles.HeatMapAxes);
+            axes(viewHandles.HeatMapAxes);            
             obj.itsHeatMap.plotHeatMap(cellNumber, 0);
             
-            tcModel.cellIndex = cellNumber;
+            tcModel.cellIndex = cellIndex;
             
         end
         
