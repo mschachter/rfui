@@ -10,15 +10,7 @@ function testTuningCurve(dataFilePath)
     tc1.numSubplots = [5, 4];
     tc1.plotTuningCurve();
     
-    tc2 = TuningCurve('smoothing', 0.5);
-    tc2.expData = edata;
-    tc2.filterWidth = 1;
-    tc2.timeOffset = 0;
-    tc2.useSubplots = 1;
-    tc2.numSubplots = [4, 5];
-    tc2.plotTuningCurve();
-    
-    tc3 = TuningCurve('smoothing', 0.5);
+    tc3 = TuningCurve(4);
     tc3.expData = edata;
     tc3.selectedCells = [2, 5, 6];
     tc3.filterWidth = 1;

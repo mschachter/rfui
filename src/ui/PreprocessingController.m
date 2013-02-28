@@ -53,8 +53,8 @@ classdef PreprocessingController < handle
             set(viewHandles.NumberOfBinsEdit, 'String', num2str(preprocModel.variableNumberOfBins));
             set(viewHandles.NumberOfBinsEdit, 'Value', preprocModel.variableNumberOfBins);
 
-            set(viewHandles.SmoothingParameterEdit, 'String', num2str(preprocModel.splineParameter));
-            set(viewHandles.SmoothingParameterEdit, 'Value', preprocModel.splineParameter);
+            set(viewHandles.SplineDoFEdit, 'String', num2str(preprocModel.splineDoF));
+            set(viewHandles.SplineDoFEdit, 'Value', preprocModel.splineDoF);
 
             set(viewHandles.BinSpacingEdit, 'String', num2str(preprocModel.heatmapBinSpacing));
             set(viewHandles.BinSpacingEdit, 'Value', preprocModel.heatmapBinSpacing);
