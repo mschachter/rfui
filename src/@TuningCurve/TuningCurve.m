@@ -402,13 +402,13 @@ classdef TuningCurve < handle
                 zeroCrossings = zeroCrossings(~isnan(zeroCrossings));
 
                 %evaluate the derivative at the zero crossings
-                zc = fnval(dCs, zeroCrossings);                
+                zc = ppval(dCs, zeroCrossings);                
                 zc = zeroCrossings( abs(zc) < 10^-10 );
                 
                 %the max firing rate is either a zero crossing or an
                 %endpoint
                 zc = [zc', obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
-                mx = fnval(currSpline, zc);
+                mx = ppval(currSpline, zc);
                 obj.itsPeakRate(cellIndex) = max(mx);
                 
                 %broadcast event that tuning curve was fit for cell
