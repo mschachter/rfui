@@ -21,10 +21,7 @@ classdef CSFit < handle
         R2
         
         %the spline function
-        splineFunc
-        
-        %the spline type
-        splineType
+        splineFunc        
     end
     
     %#########################################################################
@@ -56,11 +53,6 @@ classdef CSFit < handle
             end
             ret = obj.itsSplineFunc;
         end
-        
-        %called when splineType is accessed
-        function ret = get.splineType(obj)
-            ret = obj.itsSplineType;
-        end
     end
     
     %#########################################################################
@@ -70,13 +62,8 @@ classdef CSFit < handle
         
         %fit the data with a cubic spline
         function fitData(obj)            
-            p = 1.0; %the p used for natural cubic spline
-            if strcmp('smoothing', obj.itsMethod)                            
-                if obj.itsMethodParameters.isKey('p')
-                    p = obj.itsMethodParameters('p');
-                end
-            end
-            obj.itsSplineFunc = csaps(obj.X, obj.Y, p);                                    
+            dof = obj.itsSplineParams('dof');
+            obj.itsSplineFunc = splinefit(obj.X, obj.Y, dof, 4); %cubic spline with 4 degrees of freedom
             obj.computeR2;            
         end
 
@@ -86,7 +73,7 @@ classdef CSFit < handle
                 error('Cannot compute R^2 because there is no spline function!');
             end
             ymean = mean(obj.Y);
-            pred = fnval(obj.itsSplineFunc, obj.X);
+            pred = obj.eval(obj.X);
             err = pred - obj.Y;
             ssTotal = sum((obj.Y - ymean).^2);
             ssErr = sum(err.^2);
@@ -106,11 +93,9 @@ classdef CSFit < handle
         %R^2
         itsR2 = nan;        
         %cubic spline implementation
-        itsMethod = 'natural';
-        %implementation parameters
-        itsMethodParameters = containers.Map();
+        itsSplineParams = containers.Map();
         %actual fit spline function
-        itsSplineFunc = [];
+        itsSplineFunc = [];        
     end
     
     %#########################################################################
@@ -123,7 +108,8 @@ classdef CSFit < handle
             if isempty(obj.itsSplineFunc)
                 obj.fitData();
             end
-            Ypred = fnval(obj.itsSplineFunc, x);   
+            
+            Ypred = ppval(obj.itsSplineFunc, x);
         end
     end
     
@@ -132,21 +118,17 @@ classdef CSFit < handle
     %#########################################################################
     methods (Access = public)
         %create a new SpikeData object from spike times, assuming units are in seconds.
-        function newCS = CSFit(x, y, method, methodParameters)
+        function newCS = CSFit(x, y, splineParams)
             if ((nargin < 2) || (~isa(x, 'double')) || (~isa(y, 'double')))
                 error('argument must of two array of doubles representing x and y data to be fit');    
             end             
             newCS.itsX = x;
             newCS.itsY = y;            
             if nargin >= 3
-                if ~ismember(method, {'natural', 'smoothing'})
-                    error('method argument to CSFit must be ''natural'' or ''smoothing''.');
-                end
-                newCS.itsMethod = method;
+                newCS.itsSplineParams = splineParams;
+            else
+                newCS.itsSplineParams('dof') = 4; 
             end
-            if nargin >= 4
-                newCS.itsMethodParameters = methodParameters;
-            end 
         end
     end
     

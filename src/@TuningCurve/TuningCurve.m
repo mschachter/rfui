@@ -112,9 +112,6 @@ classdef TuningCurve < handle
         %times
         itsTimeOffset = 0;
         
-        %spline type
-        itsSplineType = 'natural';
-        
         %spline parameters
         itsSplineParams = containers.Map();        
     end
@@ -376,7 +373,7 @@ classdef TuningCurve < handle
             for cellIndex = 1:numCells
                 cellNum = obj.selectedCells(cellIndex);
                 %perform spline fit
-                obj.itsSplineFits(cellIndex) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellIndex, :), obj.itsSplineType, obj.itsSplineParams);
+                obj.itsSplineFits(cellIndex) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellIndex, :), obj.itsSplineParams);
                 
                 %get the current spline for determine the peak firing rate
                 %off the spline fit
@@ -393,16 +390,24 @@ classdef TuningCurve < handle
                 coefs = dCs.coefs;
                 offset1 = -(coefs(:,2) + (coefs(:,2).^2 - 4.*coefs(:,1).*coefs(:,3)).^.5)./(2.*coefs(:,1));
                 offset2 = -(coefs(:,2) - (coefs(:,2).^2 - 4.*coefs(:,1).*coefs(:,3)).^.5)./(2.*coefs(:,1));
-                pos = [obj.itsBinnedVariable,obj.itsBinnedVariable(1:end-1)+offset1',obj.itsBinnedVariable(1:end-1)+offset2'];
-                pos(imag(pos) ~= 0) = [];
-                pos((pos < obj.itsBinnedVariable(1)) | (pos > obj.itsBinnedVariable(end))) = [];       
-                zc = fnval(dCs, pos);
-                idx = find(abs(zc) < 10^-10);
-                zc = pos(idx);
+                
+                %pair up the zero solutions by knot
+                z = [offset1, offset2];
+                
+                %get all the real-valued positive roots
+                z(imag(z) ~= 0 | z < min(obj.itsBinnedVariable) | z > max(obj.itsBinnedVariable) ) = nan;
+                
+                %get the actual values of the roots on the binned variable axis                
+                zeroCrossings = bsxfun(@plus, z, dCs.breaks(1:end-1)');
+                zeroCrossings = zeroCrossings(~isnan(zeroCrossings));
+
+                %evaluate the derivative at the zero crossings
+                zc = fnval(dCs, zeroCrossings);                
+                zc = zeroCrossings( abs(zc) < 10^-10 );
                 
                 %the max firing rate is either a zero crossing or an
                 %endpoint
-                zc = [zc, obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
+                zc = [zc', obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
                 mx = fnval(currSpline, zc);
                 obj.itsPeakRate(cellIndex) = max(mx);
                 
@@ -419,16 +424,14 @@ classdef TuningCurve < handle
     methods (Access = public)
         %create a new TuningCurve object given a spline type and spline
         %parameters if supplied
-        function newTC = TuningCurve(splineType, splineP)            
-            if nargin >= 1               
-                newTC.itsSplineType = splineType;                
-            end
+        function newTC = TuningCurve(splineDoF)
             
-            if nargin >= 2
-                sp = containers.Map();
-                sp('p') = splineP;
-                newTC.itsSplineParams = sp;
+            if nargin < 1
+                splineDoF = 4;
             end
+            sp = containers.Map();
+            sp('dof') = splineDoF;
+            newTC.itsSplineParams = sp;
         end
     end
         

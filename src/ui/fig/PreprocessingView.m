@@ -22,7 +22,7 @@ function varargout = PreprocessingView(varargin)
 
 % Edit the above text to modify the response to help PreprocessingView
 
-% Last Modified by GUIDE v2.5 14-Feb-2013 13:46:27
+% Last Modified by GUIDE v2.5 28-Feb-2013 10:45:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -136,32 +136,6 @@ function CellPatternEdit_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in SplineTypeListbox.
-function SplineTypeListbox_Callback(hObject, eventdata, handles)
-% hObject    handle to SplineTypeListbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns SplineTypeListbox contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from SplineTypeListbox
-mvcModel = handles.mvcModel;
-contents = cellstr(get(hObject,'String'));
-mvcModel.splineType = contents{get(hObject,'Value')};
-set(hObject, 'String', mvcModel.splineType);
-
-% --- Executes during object creation, after setting all properties.
-function SplineTypeListbox_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to SplineTypeListbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
@@ -358,20 +332,20 @@ end
 
 
 
-function SmoothingParameterEdit_Callback(hObject, eventdata, handles)
-% hObject    handle to SmoothingParameterEdit (see GCBO)
+function SplineDoFEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to SplineDoFEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of SmoothingParameterEdit as text
-%        str2double(get(hObject,'String')) returns contents of SmoothingParameterEdit as a double
+% Hints: get(hObject,'String') returns contents of SplineDoFEdit as text
+%        str2double(get(hObject,'String')) returns contents of SplineDoFEdit as a double
 mvcModel = handles.mvcModel;
-mvcModel.splineParameter = str2double(get(hObject,'String'));
-set(hObject, 'String', mvcModel.splineParameter);
+mvcModel.splineDoF = str2double(get(hObject,'String'));
+set(hObject, 'String', mvcModel.splineDoF);
 
 % --- Executes during object creation, after setting all properties.
-function SmoothingParameterEdit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to SmoothingParameterEdit (see GCBO)
+function SplineDoFEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SplineDoFEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

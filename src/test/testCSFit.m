@@ -8,26 +8,22 @@ function testCSFit()
     n2fit = 25;
     dataIndices = randsample(1:length(x), n2fit);
     
-    %Normal cubic spline
-    cs1 = CSFit(x(dataIndices), y(dataIndices), 'natural');
-    
-    %Smoothing cubic spline, p=0.5
+    %Smoothing cubic spline, 2 degrees of freedom
     sparams = containers.Map();
-    sparams('p') = 0.5;
-    cs2 = CSFit(x(dataIndices), y(dataIndices), 'smoothing', sparams);
+    sparams('dof') = 2;
+    cs2 = CSFit(x(dataIndices), y(dataIndices), sparams);
     
-    %Smoothing cubic spline, p=0.0
-    sparams('p') = 0.0;
-    cs3 = CSFit(x(dataIndices), y(dataIndices), 'smoothing', sparams);
+    %Smoothing cubic spline, 4 degrees of freedom
+    sparams = containers.Map();
+    sparams('dof') = 4;
+    cs3 = CSFit(x(dataIndices), y(dataIndices), sparams);
         
     figure(); hold on;
-    plot(x, y, 'ko');
-    plot(x, cs1.eval(x), 'ro');
+    plot(x, y, 'ko');    
     plot(x, cs2.eval(x), 'bo');
-    plot(x, cs3.eval(x), 'co');
-    legend('Original Data', 'Normal', 'Smoothing (p=0.5)', 'Smoothing (p=0.0)');
+    plot(x, cs3.eval(x), 'ro');
+    legend('Original Data', '2 DoF', '4 DoF');
     
-    fprintf('Normal R^2=%.4f\n', cs1.R2);    
-    fprintf('Smoothing (p=0.5) R^2=%.4f\n', cs2.R2);
-    fprintf('Smoothing (p=0.0) R^2=%.4f\n', cs3.R2);
+    fprintf('Smoothing (DoF=2) R^2=%.4f\n', cs2.R2);
+    fprintf('Smoothing (DoF=4) R^2=%.4f\n', cs3.R2);
 end
