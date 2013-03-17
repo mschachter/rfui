@@ -126,12 +126,17 @@ classdef CSFit < handle
         function newCS = CSFit(x, y, dof, knots)
             if ((nargin < 2) || (~isa(x, 'double')) || (~isa(y, 'double')))
                 error('argument 1 and 2 must be arrays of doubles representing x and y data to be fit');    
-            end             
+            end
+            
+            newCS = newCS@handle();
             newCS.itsX = x;
-            newCS.itsY = y;            
+            newCS.itsY = y;                 
+            newCS.itsR2 = nan;        
+            newCS.itsSplineParams = containers.Map();            
+            newCS.itsSplineFunc = [];     
             
             if nargin < 4
-                knots = length(x) - 1;
+                knots = length(x);
             end
             
             if nargin < 3
@@ -139,7 +144,7 @@ classdef CSFit < handle
             end
             
             newCS.itsSplineParams('dof') = dof; 
-            newCS.itsSplineParams('knots') = knots;                 
+            newCS.itsSplineParams('knots') = knots - 1;                 
         end
     end
     
