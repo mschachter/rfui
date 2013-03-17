@@ -16,7 +16,7 @@ header={'x', 'y'};
 writeMINEInput(path, M, header);
 
 %run the MINE software
-cmd = ['java -jar ',pathtomine,'/MINE.jar ',path,' -allPairs 1>NUL 2>NUL'];
+cmd = ['java -jar ',pathtomine,'/MINE.jar ',path,' -allPairs >',pathtomine,'/output.txt'];
 system(cmd);
 
 R = dlmread([path,',allpairs,cv=0.0,B=n^0.6,Results.csv'],',',[1 2 1 2]);
