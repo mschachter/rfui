@@ -1,7 +1,7 @@
 function testHeatMap(dataFilePath)
 
 edata = ExpData(dataFilePath, 'sig[0-9]*[a-b]*');
-tc = TuningCurve('smoothing', 0.5);
+tc = TuningCurve(4);
 tc.expData = edata;
 tc.filterWidth = 1;
 
@@ -16,7 +16,7 @@ hm.numSubplots = [5, 4];
 hm.plotHeatMap();
 
 
-tc = TuningCurve('smoothing', 0.5);
+tc = TuningCurve(4);
 tc.expData = edata;
 tc.selectedCells = [2, 5, 6];
 tc.filterWidth = 1;

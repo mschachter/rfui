@@ -32,6 +32,9 @@ classdef HeatMap < handle
         
         %the peak firing rate at the best lag for each cell
         peakRate
+        
+        %the MIC metric at the best lag for each cell
+        MIC
     end
     
     %#########################################################################
@@ -78,6 +81,9 @@ classdef HeatMap < handle
         
         %the peak firing rate at the best lag for each cell
         itsPeakRate = [];
+        
+        %the MIC metric at the best lag for each cell
+        itsMIC = [];
         
         %the tuning curve object
         itsTuningCurve = [];
@@ -159,6 +165,15 @@ classdef HeatMap < handle
                 obj.updateData = 0;
             end
             ret = obj.itsPeakRate;
+        end
+        
+        %called when peakRate is accessed
+        function ret = get.MIC(obj)
+            if (obj.updateData)
+                computeHeatMap(obj);
+                obj.updateData = 0;
+            end
+            ret = obj.itsMIC;
         end
         
         %called when tuningCurve is accessed
@@ -264,7 +279,8 @@ classdef HeatMap < handle
                 set(gca,'ytick', newTck);
                 set(gca,'yticklabel', tckLabel); 
                 title(['Max: ',num2str(round(obj.peakRate(cellIndex)*100)/100), ...
-                    ' Hz at ',num2str(obj.optimalLag(cellIndex)),' sec']);
+                    ' Hz at ',num2str(obj.optimalLag(cellIndex)),' sec. MIC=', ...
+                    num2str(round(obj.MIC(cellIndex)*100)/100)]);
             end
         end
     end
@@ -291,16 +307,23 @@ classdef HeatMap < handle
             end
             
             obj.itsPeakRate = zeros(length(tc.selectedCells), length(lags));
+            obj.itsMIC = zeros(1,length(tc.selectedCells));
             for (lagNum = 1:length(lags))
                 tc.timeOffset = lags(lagNum);
                 for (currCell = 1:length(tc.selectedCells))
                     currSpline = tc.splineFits(currCell);
                     obj.itsHeatMapData(:, lagNum, currCell) = currSpline.eval(xx)';
+                    
+                    %compute MIC
+                    if (lags(lagNum) == 0)
+                        M = [currSpline.X(:), currSpline.Y(:)]';
+                        obj.itsMIC(currCell) = runMINE('MINE', M);
+                    end
+                    
                 end
                 obj.itsPeakRate(:, lagNum) = tc.peakRate'; % a 1 x cells array of peak firing rates
                 %broadcast event that tuning curve was fit for lag
-                notify(obj,'HeatMapJustFit', HeatMapJustFitEventData(lagNum));
-                
+                notify(obj,'HeatMapJustFit', HeatMapJustFitEventData(lagNum));    
             end
             
             %compute peakRate for each cell and optimal lag
