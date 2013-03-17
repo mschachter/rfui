@@ -63,7 +63,8 @@ classdef CSFit < handle
         %fit the data with a cubic spline
         function fitData(obj)            
             dof = obj.itsSplineParams('dof');
-            obj.itsSplineFunc = splinefit(obj.X, obj.Y, dof, 4); %cubic spline with 4 degrees of freedom
+            knots = obj.itsSplineParams('knots');
+            obj.itsSplineFunc = splinefit(obj.X, obj.Y, knots, dof); %cubic spline with 4 degrees of freedom
             obj.computeR2;            
         end
 
@@ -109,7 +110,11 @@ classdef CSFit < handle
                 obj.fitData();
             end
             
-            Ypred = ppval(obj.itsSplineFunc, x);
+            if (nargin > 1)
+                Ypred = ppval(obj.itsSplineFunc, x);
+            else
+                Ypred = ppval(obj.itsSplineFunc, obj.X);
+            end
         end
     end
     
@@ -117,18 +122,24 @@ classdef CSFit < handle
     %constructor/destructor
     %#########################################################################
     methods (Access = public)
-        %create a new SpikeData object from spike times, assuming units are in seconds.
-        function newCS = CSFit(x, y, splineParams)
+        %x data, y data, dof and number of knots
+        function newCS = CSFit(x, y, dof, knots)
             if ((nargin < 2) || (~isa(x, 'double')) || (~isa(y, 'double')))
-                error('argument must of two array of doubles representing x and y data to be fit');    
+                error('argument 1 and 2 must be arrays of doubles representing x and y data to be fit');    
             end             
             newCS.itsX = x;
             newCS.itsY = y;            
-            if nargin >= 3
-                newCS.itsSplineParams = splineParams;
-            else
-                newCS.itsSplineParams('dof') = 4; 
+            
+            if nargin < 4
+                knots = length(x) - 1;
             end
+            
+            if nargin < 3
+                dof = 4;
+            end
+            
+            newCS.itsSplineParams('dof') = dof; 
+            newCS.itsSplineParams('knots') = knots;                 
         end
     end
     
