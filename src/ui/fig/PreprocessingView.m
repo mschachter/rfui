@@ -111,7 +111,16 @@ function SelectFileButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 mvcModel = handles.mvcModel;
-[ifile,ipath] = uigetfile('*.*', 'Select an input file');
+if (exist('pathinfo.mat'))
+  lastPath = load('pathinfo.mat');
+  lastPath = lastPath.lastPath;
+  [ifile,ipath] = uigetfile('*.*', 'Select an input file',lastPath);
+else
+  [ifile,ipath] = uigetfile('*.*', 'Select an input file');
+end
+lastPath = [ipath,'/',ifile];
+save('pathinfo.mat','lastPath');
+
 if ~isnumeric(ifile)
     mvcModel.inputFile = fullfile(ipath, ifile);
     set(handles.SelectFileText, 'String', ifile);
