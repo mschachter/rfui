@@ -280,7 +280,7 @@ classdef HeatMap < handle
                 set(gca,'yticklabel', tckLabel); 
                 title(['Max: ',num2str(round(obj.peakRate(cellIndex)*100)/100), ...
                     ' Hz at ',num2str(obj.optimalLag(cellIndex)),' sec. MIC=', ...
-                    num2str(round(obj.MIC(cellIndex)*100)/100)]);
+                    num2str(round(obj.MIC(cellIndex)*1000)/1000)]);                
             end
         end
     end
