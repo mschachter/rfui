@@ -88,15 +88,15 @@ classdef CSFit < handle
     %#########################################################################
     properties (GetAccess = private, SetAccess = private)
         %x axis data
-        itsX = [];
+        itsX;
         %y axis data
-        itsY = [];
+        itsY;
         %R^2
-        itsR2 = nan;        
+        itsR2;        
         %cubic spline implementation
-        itsSplineParams = containers.Map();
+        itsSplineParams;
         %actual fit spline function
-        itsSplineFunc = [];        
+        itsSplineFunc;        
     end
     
     %#########################################################################
@@ -129,6 +129,7 @@ classdef CSFit < handle
             end
             
             newCS = newCS@handle();
+            
             newCS.itsX = x;
             newCS.itsY = y;                 
             newCS.itsR2 = nan;        
@@ -136,6 +137,10 @@ classdef CSFit < handle
             newCS.itsSplineFunc = [];     
             
             if nargin < 4
+                knots = length(x);
+            end
+            
+            if (isempty(knots))
                 knots = length(x);
             end
             

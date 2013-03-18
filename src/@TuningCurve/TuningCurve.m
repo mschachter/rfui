@@ -59,19 +59,19 @@ classdef TuningCurve < handle
     %#########################################################################
     properties (GetAccess = public, SetAccess = public)
         %a ExpData class
-        expData = [];
+        expData;
         
         %the plot type : normal, semilogx
-        plotType = 'semilogx'
+        plotType;
         
         %plot all in subplots
-        useSubplots = 0;
+        useSubplots;
         
         %number of subplots (rows, cols) per figure
-        numSubplots = [6, 6];
+        numSubplots;
         
         %cells to compute tuning curves for
-        selectedCells = [];
+        selectedCells;
         
     end
     
@@ -80,7 +80,7 @@ classdef TuningCurve < handle
     %#########################################################################
     properties (GetAccess = public, SetAccess = private)
        %flag variables
-        updateData = 1; 
+        updateData; 
     end
     
     %#########################################################################
@@ -88,32 +88,32 @@ classdef TuningCurve < handle
     %#########################################################################
     properties (GetAccess = private, SetAccess = private)
         %binned continous variable data
-        itsBinnedVariable = []
+        itsBinnedVariable;
         
         %average spike rate in each bin
-        itsAverageSpikeRate = []
+        itsAverageSpikeRate;
         
         %the spline fits for each cell
-        itsSplineFits = []
+        itsSplineFits;
         
         %the peak firing rate of the tuning curve
-        itsPeakRate = []
+        itsPeakRate;
         
         %number of bins for computation
-        itsNumBins = 20
+        itsNumBins;
         
         %variable of interest
-        itsExpVariable = 'Velocity(Center-point)';
+        itsExpVariable;
         
         %smooth the variable of interest with a filter this wide in seconds
-        itsFilterWidth = 1;
+        itsFilterWidth;
         
         %apply an offset to the data by adding this value to the spike
         %times
-        itsTimeOffset = 0;
+        itsTimeOffset;
         
         %spline parameters
-        itsSplineParams = containers.Map();        
+        itsSplineParams;
     end
     
     %#########################################################################
@@ -372,8 +372,10 @@ classdef TuningCurve < handle
             obj.itsSplineFits = CSFit.empty(0,length(obj.selectedCells));
             for cellIndex = 1:numCells
                 cellNum = obj.selectedCells(cellIndex);
+                
                 %perform spline fit
-                obj.itsSplineFits(cellIndex) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellIndex, :), obj.itsSplineParams);
+                obj.itsSplineFits(cellIndex) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellIndex, :),...
+                                                     obj.itsSplineParams('dof'), obj.itsSplineParams('knots'));
                 
                 %get the current spline for determine the peak firing rate
                 %off the spline fit
@@ -386,28 +388,48 @@ classdef TuningCurve < handle
                 dCs.coefs = bsxfun(@times, currSpline.coefs(:,1:end-1), dCs.order:-1:1);
                 
                 %identify all the zero crossings (potentially at each knot,
-                %and at the zeros of a cubic where 3ax^2 + 2bx + cx = 0)
+                %and at the zeros of the spline
                 coefs = dCs.coefs;
-                offset1 = -(coefs(:,2) + (coefs(:,2).^2 - 4.*coefs(:,1).*coefs(:,3)).^.5)./(2.*coefs(:,1));
-                offset2 = -(coefs(:,2) - (coefs(:,2).^2 - 4.*coefs(:,1).*coefs(:,3)).^.5)./(2.*coefs(:,1));
                 
-                %pair up the zero solutions by knot
-                z = [offset1, offset2];
+                compZero = 1;
+                if (currSpline.order == 4)
+                    %-(b + (b^2 - 3*a*c)^(1/2))/(3*a)
+                    %-(b - (b^2 - 3*a*c)^(1/2))/(3*a)
+                    offset1 = -(coefs(:,2) + (coefs(:,2).^2 - 3.*coefs(:,1).*coefs(:,3)).^.5)./(3.*coefs(:,1));
+                    offset2 = -(coefs(:,2) - (coefs(:,2).^2 - 3.*coefs(:,1).*coefs(:,3)).^.5)./(3.*coefs(:,1));
+                elseif (currSpline.order == 3)
+                    %-b/(2*a)
+                    offset1 = -coefs(:,2)./(2.*coefs(:,1));
+                    offset2 = offset1;
+                elseif (currSpline.order == 2)    
+                    compZero = 0;
+                else
+                    error('only order 4 (cubic), 3 (quadratic), or 2 (linear) splines allowed');
+                end
+                    
+                if (compZero)
+                    %pair up the zero solutions by knot
+                    z = [offset1, offset2];
                 
-                %get all the real-valued positive roots
-                z(imag(z) ~= 0 | z < min(obj.itsBinnedVariable) | z > max(obj.itsBinnedVariable) ) = nan;
+                    %get all the real-valued positive roots
+                    z(imag(z) ~= 0 | z < min(obj.itsBinnedVariable) | z > max(obj.itsBinnedVariable) ) = nan;
                 
-                %get the actual values of the roots on the binned variable axis                
-                zeroCrossings = bsxfun(@plus, z, dCs.breaks(1:end-1)');
-                zeroCrossings = zeroCrossings(~isnan(zeroCrossings));
+                    %get the actual values of the roots on the binned variable axis                
+                    zeroCrossings = bsxfun(@plus, z, dCs.breaks(1:end-1)');
+                    zeroCrossings = zeroCrossings(~isnan(zeroCrossings));
+                    zeroCrossings = zeroCrossings(:);
 
-                %evaluate the derivative at the zero crossings
-                zc = ppval(dCs, zeroCrossings);                
-                zc = zeroCrossings( abs(zc) < 10^-10 );
+                    %evaluate the derivative at the zero crossings
+                    zc = ppval(dCs, zeroCrossings);                
+                    zc = zeroCrossings( abs(zc) < 10^-10 );
                 
-                %the max firing rate is either a zero crossing or an
-                %endpoint
-                zc = [zc', obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
+                    %the max firing rate is either a zero crossing or an
+                    %endpoint
+                    zc = [zc', obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
+                else
+                    zc = [obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
+                end
+                
                 mx = ppval(currSpline, zc);
                 obj.itsPeakRate(cellIndex) = max(mx);
                 
@@ -424,14 +446,37 @@ classdef TuningCurve < handle
     methods (Access = public)
         %create a new TuningCurve object given a spline type and spline
         %parameters if supplied
-        function newTC = TuningCurve(splineDoF)
+        function newTC = TuningCurve(splineDoF, splineKnots)
+    
+            newTC = newTC@handle();
+            
+            newTC.expData = [];
+            newTC.plotType = 'semilogx';
+            newTC.useSubplots = 0;
+            newTC.numSubplots = [6, 6];
+            newTC.selectedCells = [];
+            newTC.updateData = 1; 
+            newTC.itsBinnedVariable = [];
+            newTC.itsAverageSpikeRate = [];
+            newTC.itsSplineFits = [];
+            newTC.itsPeakRate = [];
+            newTC.itsNumBins = 20;
+            newTC.itsExpVariable = 'Velocity(Center-point)';
+            newTC.itsFilterWidth = 1;
+            newTC.itsTimeOffset = 0;
+            newTC.itsSplineParams = containers.Map();        
             
             if nargin < 1
                 splineDoF = 4;
             end
-            sp = containers.Map();
-            sp('dof') = splineDoF;
-            newTC.itsSplineParams = sp;
+            
+            newTC.itsSplineParams('dof') = splineDoF;
+            
+            if nargin < 2
+                splineKnots = [];
+            end
+            
+            newTC.itsSplineParams('knots') = splineKnots;
         end
     end
         

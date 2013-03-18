@@ -41,21 +41,31 @@ classdef ExpData < handle
     end
     
     %#########################################################################
-    %read-only properties
+    %read/write properties
     %#########################################################################
-    properties (GetAccess = public, SetAccess = private)
-        fileName = '';
-        samplingRate = 0;
-        recordingTime = [];
+    properties (Dependent = true, GetAccess = public, SetAccess = public)        
+        %samplling resolution in seconds
+        cellSamplingResolution;
+        
+        %spike rate type (exp, gaussian, alpha)
+        cellSpikeRateType;
+        
+        %spike rate filter width in seconds
+        cellSpikeRateFilterWidth;
     end
     
     %#########################################################################
-    %read/write properties
+    %read-only properties
     %#########################################################################
-    properties (GetAccess = public, SetAccess = public)
-        cellSamplingResolution = 1000
-        cellSpikeRateType = 'Gaussian';
-        cellSpikeRateFilterWidth = .015;
+    properties (GetAccess = public, SetAccess = private)
+        %data file name
+        fileName;
+        
+        %average sampling rae
+        samplingRate;
+        
+        %recording time offset
+        recordingTime;
     end
     
     %#########################################################################
@@ -63,10 +73,19 @@ classdef ExpData < handle
     %#########################################################################
     properties (GetAccess = private, SetAccess = private)
         % map with string keys a vector values
-        varDataMap = containers.Map();
+        varDataMap;
         
         %a map with string keys and SpikeData values
-        cellDataMap = containers.Map();
+        cellDataMap;
+        
+        %samplling resolution in seconds
+        itsCellSamplingResolution;
+        
+        %spike rate type (exp, gaussian, alpha)
+        itsCellSpikeRateType;
+        
+        %spike rate filter width in seconds
+        itsCellSpikeRateFilterWidth;
     end
     
     %#########################################################################
@@ -91,6 +110,21 @@ classdef ExpData < handle
         %called when cellNames is accessed
         function ret = get.cellCount(obj)
             ret = int32(obj.cellDataMap.Count);
+        end
+       
+        %called when cellSamplingResolution is accessed
+        function ret = get.cellSamplingResolution(obj)
+            ret = obj.itsCellSamplingResolution;
+        end
+        
+        %called when cellSpikeRateType is accessed
+        function ret = get.cellSpikeRateType(obj)
+            ret = obj.itsCellSpikeRateType;
+        end
+        
+        %called when cellSpikeRateFilterWidth is accessed
+        function ret = get.cellSpikeRateFilterWidth(obj)
+            ret = obj.itsCellSpikeRateFilterWidth;
         end
     end 
     
@@ -187,7 +221,7 @@ classdef ExpData < handle
     %#########################################################################
     methods (Access = private)
         % read data from a file
-        readDataFromFile(obj, filePathStr, cellExprStr)
+        readDataFromFile(obj, filePathStr, cellExprStr);
         
         %update the spike sampling res
         function updateSpikeSamplingRes(obj)
@@ -237,7 +271,17 @@ classdef ExpData < handle
                 error('Data file cannot be found');
             end
             
+            newED = newED@handle();
+          
+            newED.recordingTime = [];
+            newED.itsCellSamplingResolution = 1000;
+            newED.itsCellSpikeRateType = 'Gaussian';
+            newED.itsCellSpikeRateFilterWidth = .015;
+            newED.varDataMap = containers.Map();
+            newED.cellDataMap = containers.Map();
+            
             newED.fileName = dataFileNameStr;
+            
             %read the data
             readDataFromFile(newED, dataFileNameStr, cellExprStr);
             

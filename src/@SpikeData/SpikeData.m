@@ -47,18 +47,18 @@ classdef SpikeData < handle
     %#########################################################################
     properties (GetAccess = private, SetAccess = private)
         %flag properties
-        updateSpikeCount = 1;
-        updateSpikeRate = 1;
+        updateSpikeCount;
+        updateSpikeRate;
         
         %private versions of dependent
-        itsSamplingResolution = 1000 %in Hz
-        itsSpikeRateType = 'Gaussian';
-        itsSpikeRateFilterWidth = .015; %in seconds
-        itsSpikeTimes = [];
-        itsSpikeCount = [];
-        itsTimeStamp = [];
-        itsSpikeRate = [];
-        itsRecordingStartTime = 0;
+        itsSamplingResolution; %in Hz
+        itsSpikeRateType;
+        itsSpikeRateFilterWidth; %in seconds
+        itsSpikeTimes;
+        itsSpikeCount;
+        itsTimeStamp;
+        itsSpikeRate;
+        itsRecordingStartTime;
     end
     
     %#########################################################################
@@ -193,6 +193,22 @@ classdef SpikeData < handle
             if ((nargin < 1) || (~isa(newSpikeTimes, 'double')))
                 error('argument must of an array of doubles representing spike times');    
             end 
+            
+            %call super
+            newSD = newSD@handle();
+            
+            %flag properties
+            newSD.updateSpikeCount = 1;
+            newSD.updateSpikeRate = 1;
+        
+            %private versions of dependent
+            newSD.itsSamplingResolution = 1000; %in Hz
+            newSD.itsSpikeRateType = 'Gaussian';
+            newSD.itsSpikeRateFilterWidth = .015; %in seconds
+            newSD.itsSpikeTimes = [];
+            newSD.itsSpikeCount = [];
+            newSD.itsTimeStamp = [];
+            
             newSpikeTimes(isnan(newSpikeTimes) == 1) = [];
             newSD.itsSpikeTimes = newSpikeTimes;
             
