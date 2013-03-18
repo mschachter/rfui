@@ -60,13 +60,13 @@ classdef HeatMap < handle
     %#########################################################################
     properties (GetAccess = public, SetAccess = public)
         %plot all in subplots
-        useSubplots = 0;
+        useSubplots;
         
         %number of subplots (rows, cols) per figure
-        numSubplots = [4, 4];
+        numSubplots;
         
         %number of y axis bins
-        numYAxisBins = 100;
+        numYAxisBins;
     end
     
     %#########################################################################
@@ -74,31 +74,31 @@ classdef HeatMap < handle
     %#########################################################################
     properties (GetAccess = private, SetAccess = private)
         %the raw heatmap data matrix
-        itsHeatMapData = [];
+        itsHeatMapData;
         
         %the lag with the highest peak rate for each cell
-        itsOptimalLag = [];
+        itsOptimalLag;
         
         %the peak firing rate at the best lag for each cell
-        itsPeakRate = [];
+        itsPeakRate;
         
         %the MIC metric at the best lag for each cell
-        itsMIC = [];
-        
+        itsMIC;
+       
         %the tuning curve object
-        itsTuningCurve = [];
+        itsTuningCurve;
         
-        %the amount to lag the signal
-        itsLagTime = .1;%default 100ms
+        %the amount to lag the signal in seconds
+        itsLagTime;
         
         %the number of lags to compute
-        itsNumLags = 50;%default 50 lags
+        itsNumLags;
         
         %the plot type : normal, semilogx
-        itsPlotType = 'semilogx'
+        itsPlotType;
         
         %update flag variables
-        updateData = 1
+        updateData;
     end
     
     %#########################################################################
@@ -333,4 +333,29 @@ classdef HeatMap < handle
             obj.itsOptimalLag = lags(obj.itsOptimalLag);
         end
     end    
+    
+    %#########################################################################
+    %constructor/destructor
+    %#########################################################################
+    methods (Access = public)
+        %x data, y data, dof and number of knots
+        function newHM = HeatMap(argin)
+            
+            newHM = newHM@handle();
+            
+            newHM.useSubplots = 0;
+            newHM.numSubplots = [4, 4];
+            newHM.numYAxisBins = 100;
+            newHM.itsHeatMapData = [];
+            newHM.itsOptimalLag = [];
+            newHM.itsPeakRate = [];
+            newHM.itsMIC = [];
+            newHM.itsTuningCurve = [];
+            newHM.itsLagTime = .1;
+            newHM.itsNumLags = 50;
+            newHM.itsPlotType = 'semilogx';
+            newHM.updateData = 1;
+        end
+    end    
+    
 end % classdef
