@@ -22,3 +22,5 @@ end
 fprintf(ferp, '%s\n',header{end});
 
 fprintf(ferp, '%1.6f, %1.6f\n', M);
+
+fclose(ferp);
