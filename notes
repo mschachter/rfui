@@ -1,0 +1,79 @@
+MIC metric
+
+####################################
+Unfinished items 
+####################################
+--something about area of conentration in time and space - but I think this is just the max lag and max firing rate at max lag as that is what they had in the paper
+--we actually had something about RF fitting in the estimate, but we didn't do it and it wasn't part of hist methods. 
+--we also had corr/coef between spike train and predicted spike train, but that would only be if we did fitting
+--decoder to get predicted continous variable from 1 or more neurons
+
+####################################
+Dave Suggestions:
+####################################
+
+-update gui to allow for change in order of spline as well as the number of
+ knots. The CSFit and TuningCurve classes now takes a parameter for the number
+ of knots. The default can be empty and that will put a spline between every
+ point. Something like 3 gives good smoothing.
+
+-For gui, we don't need the 'Spike Parameters' or the 'Sample Rate' stuff, as it isn't
+ actually used. But, I think we can add a separate single unit visualization
+ window so that one can view individual neurons and plot other variables along
+ with it? Then adjust the time range and such? Using the SPDF that is created
+ might also be useful for the decoder.
+
+-For gui, in 'input information', should probably read 'average sampling rate'
+
+-For gui, expose more params like plot resolution, number of subplots, filter
+ width etc. take a look through classes and we should expose as many params as
+ possible.
+
+####################################
+Lex review
+####################################
+2) I don't think 'Dependent Variable' is updating when I click a
+different one.  I tried clicking a couple and got identical heatmaps,
+so I don't know which variable it's defaulting to. Two points on this:
+        a) Can we put axes labels on the figures to reflect which variable
+was selected?  This would make me more confident that it was updating.
+ Can this be done across the board actually?  ie: can all selections
+make it to the figure page (and output document when we get to that)?
+        b) I'm still experiencing that issue where the 'Dependent Variable"
+clickbox disappears after I click a variable - could this be r2009a?
+I'm working on getting new Matlab here but haven't figured it out yet.
+
+3) The heatmap parameters do not always update - when I change the
+number of bins it sometimes still calculates 51 lags.  Sometimes it
+works but I can't figure out why.  Do I have to do something to get
+the new values to be recognized?
+
+4) For almost all of the tuning curve fits (not the data points),
+~10^1 is the max or min of the fit.  Often it looks like the fit is
+going way out of the way to make this happen.  Can you check why this
+is happening?  I'm attaching some examples of this. It also looks like
+they are over-fitting, although Mariel said a 4th degree of freedom
+spline worked best for her.  I tried to turn the degrees of freedom
+down but it doesn't seem to do anything.  Maybe this variable is not
+updating?
+
+5) I see what you mean about the heatmaps probably being better off
+all fit at once... Not sure why things looked different for Mariel.
+I'll ask her.  But let's discuss implementing true receptive fields at
+some point?
+
+6) Lastly, are we ready to discuss an output excel sheet?
+a. filename
+b. cell
+c. Average firing rate
+d. Peak firing rate of tuning curve
+e. Speed at peak firing rate of tuning curve
+f. R2 for tuning curve fit
+g. p-value for tuning curve fit
+h. Peak firing rate of heatmap
+i. Speed at peak firing rate of heat map
+j. Time lag at peak firing rate of heat map
+k. MIC of heat map
+l. Or is there another way to quantify hot spots in heatmaps that's
+more intuitive than MIC?
+
