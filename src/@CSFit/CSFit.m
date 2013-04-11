@@ -64,7 +64,7 @@ classdef CSFit < handle
         function fitData(obj)            
             dof = obj.itsSplineParams('dof');
             knots = obj.itsSplineParams('knots');
-            obj.itsSplineFunc = splinefit(obj.X, obj.Y, knots, dof); %cubic spline with 4 degrees of freedom
+            obj.itsSplineFunc = splinefit(obj.X, obj.Y, knots); %cubic spline
             obj.computeR2;            
         end
 

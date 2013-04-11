@@ -312,12 +312,14 @@ classdef HeatMap < handle
                 tc.timeOffset = lags(lagNum);
                 for (currCell = 1:length(tc.selectedCells))
                     currSpline = tc.splineFits(currCell);
-                    obj.itsHeatMapData(:, lagNum, currCell) = currSpline.eval(xx)';
+                    sval = currSpline.eval(xx)';
+                    sval = real(sval);
+                    obj.itsHeatMapData(:, lagNum, currCell) = sval;
                     
                     %compute MIC
                     if (lags(lagNum) == 0)
                         M = [currSpline.X(:), currSpline.Y(:)]';
-                        obj.itsMIC(currCell) = runMINE('MINE', M);
+                        obj.itsMIC(currCell) = runMINE(M);
                     end
                     
                 end
@@ -331,6 +333,7 @@ classdef HeatMap < handle
             obj.itsPeakRate = obj.itsPeakRate';
             obj.itsOptimalLag = obj.itsOptimalLag';
             obj.itsOptimalLag = lags(obj.itsOptimalLag);
+            obj.updateData = 0;            
         end
     end    
     

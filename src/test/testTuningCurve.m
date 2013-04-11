@@ -11,8 +11,8 @@ function testTuningCurve(dataFilePath)
     tc1.numSubplots = [5, 4];
     tc1.plotTuningCurve();
     
-    %order 4 (quadratic), as many spline pieces as data points
-    tc3 = TuningCurve(4);
+    %order 4 (cubic), 4 knots
+    tc3 = TuningCurve(4, 4);
     tc3.expData = edata;
     tc3.selectedCells = [2, 5, 6];
     tc3.filterWidth = 1;

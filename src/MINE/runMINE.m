@@ -1,4 +1,4 @@
-function R = runMINE(pathtomine, M)
+function R = runMINE(M)
 %path - path to write input
 %M - is a variable x observation matrix 
 %header - is a cell array with the same number of elements as M has rows
@@ -10,19 +10,27 @@ if (size(M,1) > 2)
     error('This function currently only processes two variables');
 end
 
+fullPath = mfilename('fullpath');
+[minePath, mfile, ext] = fileparts(fullPath);
+
+outputPath = tempdir();
+
 %write the text file
-path = [pathtomine,'/input.csv'];
+inputPath = fullfile(outputPath, 'input.csv');
 header={'x', 'y'};
-writeMINEInput(path, M, header);
+writeMINEInput(inputPath, M, header);
+
+outputPath = fullfile(outputPath, 'output.txt');
 
 %run the MINE software
-cmd = ['java -jar ',pathtomine,'/MINE.jar ',path,' -allPairs >',pathtomine,'/output.txt'];
+jarPath = fullfile(minePath, 'MINE.jar');
+cmd = sprintf('java -jar %s %s -allPairs', jarPath, inputPath);
 system(cmd);
 
-R = dlmread([path,',allpairs,cv=0.0,B=n^0.6,Results.csv'],',',[1 2 1 2]);
+R = dlmread([inputPath,',allpairs,cv=0.0,B=n^0.6,Results.csv'],',',[1 2 1 2]);
 
-p1 = [pathtomine, '/*.csv'];
-p2 = [pathtomine, '/*.txt'];
-delete(p1)
-delete(p2)
+p1 = fullfile(outputPath, '*.csv');
+p2 = fullfile(outputPath, '*.txt');
+delete(p1);
+delete(p2);
 

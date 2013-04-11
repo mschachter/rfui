@@ -21,6 +21,7 @@ classdef PreprocessingModel < handle
         variableNumberOfBins = 20;
         
         splineDoF = 4;
+        splineKnots = 4;
         
         heatmapBinSpacing = 0.200;
         heatmapNumberOfLags = 25;        

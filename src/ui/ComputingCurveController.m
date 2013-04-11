@@ -52,7 +52,8 @@ classdef ComputingCurveController < handle
             obj.itsHandles = viewHandles;
             obj.itsCellCount = length(obj.itsPreprocModel.selectedCells);
             
-            tc = TuningCurve(obj.itsPreprocModel.splineDoF);
+            tc = TuningCurve(obj.itsPreprocModel.splineDoF, 4);
+            tc.expVariable = obj.itsPreprocModel.variableOfInterest;
             tc.selectedCells = obj.itsPreprocModel.selectedCells;
             tc.filterWidth = 1;
             tc.timeOffset = 0;            

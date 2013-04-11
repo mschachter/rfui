@@ -78,9 +78,13 @@ classdef TuningCurveController < handle
             
             axes(viewHandles.TuningCurveAxes);
             obj.itsTuningCurve.plotTuningCurve(cellNumber, 0);            
+            xlabel(obj.itsPreprocModel.variableOfInterest);
+            ylabel('Firing Rate (Hz)');
             
             axes(viewHandles.HeatMapAxes);            
             obj.itsHeatMap.plotHeatMap(cellNumber, 0);
+            ylabel(obj.itsPreprocModel.variableOfInterest);
+            xlabel('Time Lag (s)');
             
             tcModel.cellIndex = cellIndex;
             

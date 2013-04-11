@@ -22,7 +22,7 @@ function varargout = PreprocessingView(varargin)
 
 % Edit the above text to modify the response to help PreprocessingView
 
-% Last Modified by GUIDE v2.5 28-Feb-2013 10:45:57
+% Last Modified by GUIDE v2.5 11-Apr-2013 11:39:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,17 +111,20 @@ function SelectFileButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 mvcModel = handles.mvcModel;
-if (exist('pathinfo.mat'))
+if exist('pathinfo.mat', 'file')
   lastPath = load('pathinfo.mat');
-  lastPath = lastPath.lastPath;
+  lastPath = lastPath.lastPath;  
+  if isnumeric(lastPath) || ~exist(lastPath, 'dir')
+      lastPath = getuserdir();
+  end
   [ifile,ipath] = uigetfile('*.*', 'Select an input file',lastPath);
 else
   [ifile,ipath] = uigetfile('*.*', 'Select an input file');
 end
-lastPath = [ipath,'/',ifile];
-save('pathinfo.mat','lastPath');
 
 if ~isnumeric(ifile)
+    lastPath = ipath;
+    save('pathinfo.mat','lastPath');
     mvcModel.inputFile = fullfile(ipath, ifile);
     set(handles.SelectFileText, 'String', ifile);
 end
@@ -137,6 +140,7 @@ function CellPatternEdit_Callback(hObject, eventdata, handles)
 mvcModel = handles.mvcModel;
 mvcModel.cellPattern = get(hObject, 'String');
 set(hObject, 'String', mvcModel.cellPattern);
+
 
 % --- Executes during object creation, after setting all properties.
 function CellPatternEdit_CreateFcn(hObject, eventdata, handles)
@@ -162,7 +166,7 @@ function VariableOfInterestListbox_Callback(hObject, eventdata, handles)
 mvcModel = handles.mvcModel;
 contents = cellstr(get(hObject,'String'));
 mvcModel.variableOfInterest = contents{get(hObject,'Value')};
-set(hObject, 'String', mvcModel.variableOfInterest);
+
 
 % --- Executes during object creation, after setting all properties.
 function VariableOfInterestListbox_CreateFcn(hObject, eventdata, handles)
@@ -175,7 +179,6 @@ function VariableOfInterestListbox_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function NumberOfBinsEdit_Callback(hObject, eventdata, handles)
@@ -341,20 +344,20 @@ end
 
 
 
-function SplineDoFEdit_Callback(hObject, eventdata, handles)
-% hObject    handle to SplineDoFEdit (see GCBO)
+function SplineKnotsEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to SplineKnotsEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of SplineDoFEdit as text
-%        str2double(get(hObject,'String')) returns contents of SplineDoFEdit as a double
+% Hints: get(hObject,'String') returns contents of SplineKnotsEdit as text
+%        str2double(get(hObject,'String')) returns contents of SplineKnotsEdit as a double
 mvcModel = handles.mvcModel;
-mvcModel.splineDoF = str2double(get(hObject,'String'));
-set(hObject, 'String', mvcModel.splineDoF);
+mvcModel.splineKnots = str2double(get(hObject,'String'));
+set(hObject, 'String', mvcModel.splineKnots);
 
 % --- Executes during object creation, after setting all properties.
-function SplineDoFEdit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to SplineDoFEdit (see GCBO)
+function SplineKnotsEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SplineKnotsEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
