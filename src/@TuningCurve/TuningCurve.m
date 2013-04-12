@@ -375,7 +375,7 @@ classdef TuningCurve < handle
                 
                 %perform spline fit
                 obj.itsSplineFits(cellIndex) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellIndex, :),...
-                                                     obj.itsSplineParams('dof'), obj.itsSplineParams('knots'));
+                                                     obj.itsSplineParams('dof'), obj.itsSplineParams('knots'), obj.itsSplineParams('beta'));
                 
                 %get the current spline for determine the peak firing rate
                 %off the spline fit
@@ -446,7 +446,7 @@ classdef TuningCurve < handle
     methods (Access = public)
         %create a new TuningCurve object given a spline type and spline
         %parameters if supplied
-        function newTC = TuningCurve(splineDoF, splineKnots)
+        function newTC = TuningCurve(splineDoF, splineKnots, splineBeta)
     
             newTC = newTC@handle();
             
@@ -464,7 +464,7 @@ classdef TuningCurve < handle
             newTC.itsExpVariable = 'Velocity(Center-point)';
             newTC.itsFilterWidth = 1;
             newTC.itsTimeOffset = 0;
-            newTC.itsSplineParams = containers.Map();        
+            newTC.itsSplineParams = containers.Map();
             
             if nargin < 1
                 splineDoF = 4;
@@ -477,6 +477,11 @@ classdef TuningCurve < handle
             end
             
             newTC.itsSplineParams('knots') = splineKnots;
+            
+            if nargin < 3
+                splineBeta = 0.5;
+            end
+            newTC.itsSplineParams('beta') = splineBeta;
         end
     end
         

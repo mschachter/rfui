@@ -63,8 +63,10 @@ classdef CSFit < handle
         %fit the data with a cubic spline
         function fitData(obj)            
             dof = obj.itsSplineParams('dof');
-            knots = obj.itsSplineParams('knots');
-            obj.itsSplineFunc = splinefit(obj.X, obj.Y, knots); %cubic spline
+            numKnots = obj.itsSplineParams('knots');
+            beta = obj.itsSplineParams('beta'); %beta doesn't seem to have any effect!
+            
+            obj.itsSplineFunc = splinefit(obj.X, obj.Y, numKnots, 3, 'r', beta); %cubic spline
             obj.computeR2;            
         end
 
@@ -123,7 +125,7 @@ classdef CSFit < handle
     %#########################################################################
     methods (Access = public)
         %x data, y data, dof and number of knots
-        function newCS = CSFit(x, y, dof, knots)
+        function newCS = CSFit(x, y, dof, knots, beta)
             if ((nargin < 2) || (~isa(x, 'double')) || (~isa(y, 'double')))
                 error('argument 1 and 2 must be arrays of doubles representing x and y data to be fit');    
             end
@@ -136,20 +138,21 @@ classdef CSFit < handle
             newCS.itsSplineParams = containers.Map();            
             newCS.itsSplineFunc = [];     
             
-            if nargin < 4
-                knots = length(x);
-            end
-            
-            if (isempty(knots))
-                knots = length(x);
-            end
-            
             if nargin < 3
                 dof = 4;
             end
             
+            if nargin < 4
+                knots = length(x);
+            end
+            
+            if nargin < 5
+                beta = 0.5;
+            end
+            
             newCS.itsSplineParams('dof') = dof; 
-            newCS.itsSplineParams('knots') = knots - 1;                 
+            newCS.itsSplineParams('knots') = knots - 1;  
+            newCS.itsSplineParams('beta') = beta;
         end
     end
     

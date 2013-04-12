@@ -3,7 +3,7 @@ function testTuningCurve(dataFilePath)
     edata = ExpData(dataFilePath, 'sig[0-9]*[a-b]*');
     
     %order 3 (quadratic), 4 knots (3 spline pieces)
-    tc1 = TuningCurve(3,4);
+    tc1 = TuningCurve(3,4,0.95);
     tc1.expData = edata;
     tc1.filterWidth = 1;
     tc1.timeOffset = 0;
@@ -23,3 +23,4 @@ function testTuningCurve(dataFilePath)
     
     %plot only cell cenumber 5
     tc3.plotTuningCurve(5);
+    
