@@ -34,6 +34,8 @@ classdef PreprocessingModel < handle
                 
         cellList = {};        
         selectedCells = {};
+        
+        generateOutputFile = 1;
     end
     
     %#########################################################################
@@ -104,6 +106,11 @@ classdef PreprocessingModel < handle
             v = InputValidator();
             obj.heatmapNumberOfLags = v.checkNumberAgainstRange(value, 0, 10000, 50);
         end
+        
+        function set.generateOutputFile(obj, value)
+            v = InputValidator();
+            obj.generateOutputFile = v.checkNumberAgainstRange(value, 0, 1, 1);
+        end        
         
     end 
     

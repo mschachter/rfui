@@ -22,7 +22,7 @@ function varargout = PreprocessingView(varargin)
 
 % Edit the above text to modify the response to help PreprocessingView
 
-% Last Modified by GUIDE v2.5 21-May-2013 10:11:47
+% Last Modified by GUIDE v2.5 21-May-2013 10:44:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -126,7 +126,12 @@ if ~isnumeric(ifile)
     lastPath = ipath;
     save('pathinfo.mat','lastPath');
     mvcModel.inputFile = fullfile(ipath, ifile);
-    set(handles.SelectFileText, 'String', ifile);
+    [iipath,filename,fileext] = fileparts(ifile);
+    set(handles.SelectFileText, 'String', [filename fileext]);
+    
+    outputDir = fullfile(lastPath, 'output');    
+    [status,message,messageid] = mkdir(outputDir);
+    set(handles.OutputDirectoryEdit, 'String', outputDir);
 end
 
 
@@ -424,3 +429,36 @@ function LogSpikeRateCheckbox_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of LogSpikeRateCheckbox
 mvcModel = handles.mvcModel;
 mvcModel.logSpikeRate = get(hObject,'Value');
+
+
+% --- Executes on button press in GenerateOutputCheckbox.
+function GenerateOutputCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to GenerateOutputCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of GenerateOutputCheckbox
+mvcModel = handles.mvcModel;
+mvcModel.generateOutputFile = get(hObject,'Value');
+
+
+function OutputDirectoryEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to OutputDirectoryEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of OutputDirectoryEdit as text
+%        str2double(get(hObject,'String')) returns contents of OutputDirectoryEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function OutputDirectoryEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to OutputDirectoryEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

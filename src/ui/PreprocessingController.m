@@ -42,7 +42,8 @@ classdef PreprocessingController < handle
         
         function updateView(obj, viewHandles, preprocModel)
             
-            set(viewHandles.SelectFileText, 'String', preprocModel.inputFile);
+            [iipath,filename,fileext] = fileparts(preprocModel.inputFile);
+            set(viewHandles.SelectFileText, 'String', [filename fileext]);            
             set(viewHandles.CellPatternEdit, 'String', 'sig*');
 
             set(viewHandles.SpikeRateWindowSizeEdit, 'String', num2str(preprocModel.spikeRateWindowSize));
@@ -74,6 +75,8 @@ classdef PreprocessingController < handle
 
             set(viewHandles.CellsToAnalyzeListbox, 'String', preprocModel.cellList);
             set(viewHandles.CellsToAnalyzeListbox, 'Value', 1:length(preprocModel.cellList));
+            
+            set(viewHandles.GenerateOutputCheckbox, 'Value', preprocModel.generateOutputFile);
             
         end
                 
