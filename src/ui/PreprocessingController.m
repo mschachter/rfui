@@ -53,9 +53,16 @@ classdef PreprocessingController < handle
             set(viewHandles.NumberOfBinsEdit, 'String', num2str(preprocModel.variableNumberOfBins));
             set(viewHandles.NumberOfBinsEdit, 'Value', preprocModel.variableNumberOfBins);
 
-            set(viewHandles.SplineKnotsEdit, 'String', num2str(preprocModel.splineKnots));
-            set(viewHandles.SplineKnotsEdit, 'Value', preprocModel.splineKnots);
+            set(viewHandles.SplineOrderEdit, 'String', num2str(preprocModel.splineOrder));
+            set(viewHandles.SplineOrderEdit, 'Value', preprocModel.splineOrder);
+            
+            set(viewHandles.SplineNumberOfKnotsEdit, 'String', num2str(preprocModel.splineNumberOfKnots));
+            set(viewHandles.SplineNumberOfKnotsEdit, 'Value', preprocModel.splineNumberOfKnots);
 
+            set(viewHandles.LogSpikeRateCheckbox, 'Value', preprocModel.logSpikeRate);
+            
+            set(viewHandles.LogVariableCheckbox, 'Value', preprocModel.logVariable);
+            
             set(viewHandles.BinSpacingEdit, 'String', num2str(preprocModel.heatmapBinSpacing));
             set(viewHandles.BinSpacingEdit, 'Value', preprocModel.heatmapBinSpacing);
 

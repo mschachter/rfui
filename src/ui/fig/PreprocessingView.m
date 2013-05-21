@@ -22,7 +22,7 @@ function varargout = PreprocessingView(varargin)
 
 % Edit the above text to modify the response to help PreprocessingView
 
-% Last Modified by GUIDE v2.5 11-Apr-2013 11:39:17
+% Last Modified by GUIDE v2.5 21-May-2013 10:11:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -344,20 +344,20 @@ end
 
 
 
-function SplineKnotsEdit_Callback(hObject, eventdata, handles)
-% hObject    handle to SplineKnotsEdit (see GCBO)
+function SplineOrderEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to SplineOrderEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of SplineKnotsEdit as text
-%        str2double(get(hObject,'String')) returns contents of SplineKnotsEdit as a double
+% Hints: get(hObject,'String') returns contents of SplineOrderEdit as text
+%        str2double(get(hObject,'String')) returns contents of SplineOrderEdit as a double
 mvcModel = handles.mvcModel;
-mvcModel.splineKnots = str2double(get(hObject,'String'));
-set(hObject, 'String', mvcModel.splineKnots);
+mvcModel.splineOrder = str2double(get(hObject,'String'));
+set(hObject, 'String', mvcModel.splineOrder);
 
 % --- Executes during object creation, after setting all properties.
-function SplineKnotsEdit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to SplineKnotsEdit (see GCBO)
+function SplineOrderEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SplineOrderEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -378,3 +378,49 @@ mvcController = handles.mvcController;
 mvcModel = handles.mvcModel;
 mvcController.loadExpData(mvcModel);
 mvcController.updateView(handles, mvcModel);
+
+
+
+function SplineNumberOfKnotsEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to SplineNumberOfKnotsEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SplineNumberOfKnotsEdit as text
+%        str2double(get(hObject,'String')) returns contents of SplineNumberOfKnotsEdit as a double
+mvcModel = handles.mvcModel;
+mvcModel.splineNumberOfKnots = str2double(get(hObject,'String'));
+set(hObject, 'String', mvcModel.splineNumberOfKnots);
+
+% --- Executes during object creation, after setting all properties.
+function SplineNumberOfKnotsEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SplineNumberOfKnotsEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in LogVariableCheckbox.
+function LogVariableCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to LogVariableCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of LogVariableCheckbox
+mvcModel = handles.mvcModel;
+mvcModel.logVariable = get(hObject,'Value');
+
+% --- Executes on button press in LogSpikeRateCheckbox.
+function LogSpikeRateCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to LogSpikeRateCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of LogSpikeRateCheckbox
+mvcModel = handles.mvcModel;
+mvcModel.logSpikeRate = get(hObject,'Value');

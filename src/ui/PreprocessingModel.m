@@ -20,8 +20,10 @@ classdef PreprocessingModel < handle
         variableOfInterest = '';
         variableNumberOfBins = 20;
         
-        splineDoF = 4;
-        splineKnots = 4;
+        splineNumberOfKnots = 3;
+        splineOrder = 3;
+        logVariable = 1;
+        logSpikeRate = 1;
         
         heatmapBinSpacing = 0.200;
         heatmapNumberOfLags = 25;        
@@ -73,9 +75,24 @@ classdef PreprocessingModel < handle
             obj.variableNumberOfBins = v.checkNumberAgainstRange(value, 1, 10000, 20);
         end
         
-        function set.splineDoF(obj, value)
+        function set.splineOrder(obj, value)
             v = InputValidator();
-            obj.splineDoF = v.checkNumberAgainstRange(value, 1, 6, 4);
+            obj.splineOrder = v.checkNumberAgainstRange(value, 1.0, 3.0, 3.0);
+        end
+        
+        function set.splineNumberOfKnots(obj, value)
+            v = InputValidator();
+            obj.splineNumberOfKnots = v.checkNumberAgainstRange(value, 2.0, 5.0, 3.0);
+        end
+        
+        function set.logVariable(obj, value)
+            v = InputValidator();
+            obj.logVariable = v.checkNumberAgainstRange(value, 0.0, 1.0, 1.0);
+        end
+        
+        function set.logSpikeRate(obj, value)
+            v = InputValidator();
+            obj.logSpikeRate = v.checkNumberAgainstRange(value, 0.0, 1.0, 1.0);
         end
         
         function set.heatmapBinSpacing(obj, value)

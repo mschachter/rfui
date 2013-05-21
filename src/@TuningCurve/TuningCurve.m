@@ -34,6 +34,10 @@ classdef TuningCurve < handle
         
         %the peak firing rate of the tuning curve
         peakRate
+        
+        logVariable;
+        
+        logRate;
     end
     
     %#########################################################################
@@ -71,7 +75,7 @@ classdef TuningCurve < handle
         numSubplots;
         
         %cells to compute tuning curves for
-        selectedCells;
+        selectedCells;               
         
     end
     
@@ -114,6 +118,10 @@ classdef TuningCurve < handle
         
         %spline parameters
         itsSplineParams;
+        
+        itsLogVariable;
+        
+        itsLogRate;
     end
     
     %#########################################################################
@@ -216,6 +224,14 @@ classdef TuningCurve < handle
         function ret = get.filterWidth(obj)
             ret = obj.itsFilterWidth;
         end
+        
+        function ret = get.logVariable(obj)
+            ret = obj.itsLogVariable;
+        end
+        
+        function ret = get.logRate(obj)
+            ret = obj.itsLogRate;
+        end
     end
     
     %#########################################################################
@@ -282,9 +298,10 @@ classdef TuningCurve < handle
                 end   
                     
                 if (strcmpi(obj.plotType, 'normal'))
-                    h = plot(obj.binnedVariable, obj.averageSpikeRate(cellIndex,:), 'o');
+                    gi = ~isnan(obj.binnedVariable) & ~isnan(obj.averageSpikeRate(cellIndex, :));
+                    h = plot(obj.binnedVariable(gi), obj.averageSpikeRate(cellIndex,gi), 'o');
                 elseif (strcmpi(obj.plotType, 'semilogx'))
-                    h = semilogx(obj.binnedVariable, obj.averageSpikeRate(cellIndex,:), 'o');
+                    h = semilogx(obj.binnedVariable(gi), obj.averageSpikeRate(cellIndex,gi), 'o');
                     %h = plot(log10(obj.binnedVariable+1), obj.averageSpikeRate(cellsToPlot(cellNum),:), 'o');
                     %set(gca, 'xtick', obj.binnedVariable);
                 else
@@ -297,7 +314,12 @@ classdef TuningCurve < handle
                 xx = obj.binnedVariable(1):.01:obj.binnedVariable(end);
                 yy = currSpline.eval(xx);
                 hold on;
-                semilogx(xx, yy,'color',[0 0 0]);
+                
+                if (strcmpi(obj.plotType, 'normal'))
+                    plot(xx, yy,'color',[0 0 0]);
+                else
+                    semilogx(xx, yy,'color',[0 0 0]);
+                end
                 %plot(log10(xx+1), yy,'color',[0 0 0]);
                 hold off;
                 
@@ -366,6 +388,15 @@ classdef TuningCurve < handle
             obj.itsBinnedVariable = fliplr(obj.itsBinnedVariable);
             obj.itsAverageSpikeRate = fliplr(obj.itsAverageSpikeRate);
             
+            %transform variables if requested
+            if obj.logVariable
+                obj.itsBinnedVariable = log(obj.itsBinnedVariable);         
+                obj.itsBinnedVariable(isinf(obj.itsBinnedVariable)) = nan;
+            end
+            if obj.logRate
+                obj.itsAverageSpikeRate = log(obj.itsAverageSpikeRate);
+                obj.itsAverageSpikeRate(isinf(obj.itsAverageSpikeRate)) = nan;
+            end            
             
             %for each cell, compute the spline
             obj.itsPeakRate = zeros(1, length(obj.selectedCells));
@@ -373,9 +404,8 @@ classdef TuningCurve < handle
             for cellIndex = 1:numCells
                 cellNum = obj.selectedCells(cellIndex);
                 
-                %perform spline fit
-                obj.itsSplineFits(cellIndex) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellIndex, :),...
-                                                     obj.itsSplineParams('dof'), obj.itsSplineParams('knots'), obj.itsSplineParams('beta'));
+                %perform spline fit, 
+                obj.itsSplineFits(cellIndex) = CSFit(obj.itsBinnedVariable, obj.itsAverageSpikeRate(cellIndex, :), obj.itsSplineParams('order'), obj.itsSplineParams('knots'));
                 
                 %get the current spline for determine the peak firing rate
                 %off the spline fit
@@ -446,12 +476,12 @@ classdef TuningCurve < handle
     methods (Access = public)
         %create a new TuningCurve object given a spline type and spline
         %parameters if supplied
-        function newTC = TuningCurve(splineDoF, splineKnots, splineBeta)
+        function newTC = TuningCurve(splineOrder, splineNumberOfKnots, logVariable, logRate)
     
             newTC = newTC@handle();
             
             newTC.expData = [];
-            newTC.plotType = 'semilogx';
+            newTC.plotType = 'normal';
             newTC.useSubplots = 0;
             newTC.numSubplots = [6, 6];
             newTC.selectedCells = [];
@@ -467,21 +497,24 @@ classdef TuningCurve < handle
             newTC.itsSplineParams = containers.Map();
             
             if nargin < 1
-                splineDoF = 4;
+                splineOrder = 3;
             end
-            
-            newTC.itsSplineParams('dof') = splineDoF;
             
             if nargin < 2
-                splineKnots = [];
+                splineNumberOfKnots = 3;
             end
-            
-            newTC.itsSplineParams('knots') = splineKnots;
             
             if nargin < 3
-                splineBeta = 0.5;
+                logVariable = 1;
             end
-            newTC.itsSplineParams('beta') = splineBeta;
+            if nargin < 4
+                logRate = 1;
+            end
+            
+            newTC.itsSplineParams('order') = splineOrder;
+            newTC.itsSplineParams('knots') = splineNumberOfKnots;
+            newTC.itsLogVariable = logVariable;
+            newTC.itsLogRate = logRate;
         end
     end
         

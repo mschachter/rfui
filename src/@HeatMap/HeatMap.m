@@ -355,8 +355,8 @@ classdef HeatMap < handle
             newHM.itsMIC = [];
             newHM.itsTuningCurve = [];
             newHM.itsLagTime = .1;
-            newHM.itsNumLags = 50;
-            newHM.itsPlotType = 'semilogx';
+            newHM.itsNumLags = 50;            
+            newHM.itsPlotType = 'normal';
             newHM.updateData = 1;
         end
     end    

@@ -21,7 +21,7 @@ classdef CSFit < handle
         R2
         
         %the spline function
-        splineFunc        
+        splineFunc                        
     end
     
     %#########################################################################
@@ -35,7 +35,7 @@ classdef CSFit < handle
         
         %called when Y is accessed
         function ret = get.Y(obj)
-            ret = obj.itsY;
+            ret = obj.itsY;            
         end
         
         %called when R2 is accessed
@@ -62,11 +62,13 @@ classdef CSFit < handle
         
         %fit the data with a cubic spline
         function fitData(obj)            
-            dof = obj.itsSplineParams('dof');
-            numKnots = obj.itsSplineParams('knots');
-            beta = obj.itsSplineParams('beta'); %beta doesn't seem to have any effect!
+            order = obj.itsSplineParams('order');
+            knots = obj.itsSplineParams('knots');
             
-            obj.itsSplineFunc = splinefit(obj.X, obj.Y, numKnots, 3, 'r', beta); %cubic spline
+            %obj.itsSplineFunc = csaps(obj.X, obj.Y, p);
+            goodIndices = ~isnan(obj.X) & ~isnan(obj.Y);            
+            obj.itsSplineFunc = splinefit(obj.X(goodIndices), obj.Y(goodIndices), order, knots);
+                        
             obj.computeR2;            
         end
 
@@ -92,7 +94,7 @@ classdef CSFit < handle
         %x axis data
         itsX;
         %y axis data
-        itsY;
+        itsY;           
         %R^2
         itsR2;        
         %cubic spline implementation
@@ -111,7 +113,7 @@ classdef CSFit < handle
             if isempty(obj.itsSplineFunc)
                 obj.fitData();
             end
-            
+                        
             if (nargin > 1)
                 Ypred = ppval(obj.itsSplineFunc, x);
             else
@@ -125,7 +127,7 @@ classdef CSFit < handle
     %#########################################################################
     methods (Access = public)
         %x data, y data, dof and number of knots
-        function newCS = CSFit(x, y, dof, knots, beta)
+        function newCS = CSFit(x, y, order, knots)
             if ((nargin < 2) || (~isa(x, 'double')) || (~isa(y, 'double')))
                 error('argument 1 and 2 must be arrays of doubles representing x and y data to be fit');    
             end
@@ -133,26 +135,22 @@ classdef CSFit < handle
             newCS = newCS@handle();
             
             newCS.itsX = x;
-            newCS.itsY = y;                 
+            newCS.itsY = y;
+            
             newCS.itsR2 = nan;        
             newCS.itsSplineParams = containers.Map();            
-            newCS.itsSplineFunc = [];     
+            newCS.itsSplineFunc = [];
             
             if nargin < 3
-                dof = 4;
-            end
-            
+                order = 3;
+            end           
             if nargin < 4
-                knots = length(x);
+                knots = 3;
             end
             
-            if nargin < 5
-                beta = 0.5;
-            end
+            newCS.itsSplineParams('order') = order;
+            newCS.itsSplineParams('knots') = knots;
             
-            newCS.itsSplineParams('dof') = dof; 
-            newCS.itsSplineParams('knots') = knots - 1;  
-            newCS.itsSplineParams('beta') = beta;
         end
     end
     
