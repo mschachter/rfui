@@ -47,19 +47,59 @@ classdef OutputFileGenerator < handle
     %#########################################################################
     methods (Access = public)
         
+        %a. filename
+        %b. cell
+        %c. Average firing rate
+        %d. Peak firing rate of tuning curve
+        %e. Speed at peak firing rate of tuning curve
+        %f. R2 for tuning curve fit
+        %g. p-value for tuning curve fit
+        %h. Peak firing rate of heatmap
+        %i. Speed at peak firing rate of heat map
+        %j. Time lag at peak firing rate of heat map
+        %k. MIC of heat map        
+        
         function generate(obj)
-            f = fopen(obj.itsPreprocModel.outputFileName, 'w');
+            
+            ofile = sprintf('%s.csv', datestr(now(),'mm-dd-yyyy_HH.MM'));
+            outputFile = fullfile(obj.itsPreprocModel.outputDirectory, ofile);
+            
+            f = fopen(outputFile, 'w');
+            
+            tcVarName = sprintf('TC%s', obj.itsPreprocModel.variableOfInterest);
+            hmVarName = sprintf('HM%s', obj.itsPreprocModel.variableOfInterest);
+            
+            fprintf(f, 'OutputFile,CellName,AvgSpikeRate,TCPeakSpikeRate,%s,R2,HMPeakSpikeRate,%s,HMPeakLag,MIC\n', tcVarName, hmVarName);
             
             for k = 1:length(obj.itsPreprocModel.selectedCells)
                 
                 cellIndex = obj.itsPreprocModel.selectedCells(k);
                 cellName = obj.itsPreprocModel.cellList{k};
                 avgSpikeRate = mean(obj.itsTuningCurve.averageSpikeRate(cellIndex, :));
-                peakSpikeRate = obj.itsTuningCurve.peakRate(cellIndex);
+                
+                tcPeakSpikeRate = obj.itsTuningCurve.peakRate(cellIndex);
+                tcPeakVariable = obj.itsTuningCurve.peakVariable(cellIndex);
+                
+                hmPeakSpikeRate = obj.itsHeatMap.peakRate(cellIndex);
+                hmPeakVariable = obj.itsHeatMap.peakVariable(cellIndex);               
+                hmPeakLag = obj.itsHeatMap.optimalLag(cellIndex);
+                mic = obj.itsHeatMap.MIC(cellIndex);
+                
                 if obj.itsTuningCurve.logRate
                     avgSpikeRate = exp(avgSpikeRate);
-                    peakSpikeRate = exp(peakSpikeRate);
+                    tcPeakSpikeRate = exp(tcPeakSpikeRate);                    
+                    hmPeakSpikeRate = exp(hmPeakSpikeRate);
                 end                
+                if obj.itsTuningCurve.logVariable
+                    tcPeakVariable = exp(tcPeakVariable);
+                    hmPeakVariable = exp(hmPeakVariable);
+                end                
+                
+                r2 = obj.itsTuningCurve.splineFits(cellIndex).R2;
+                
+                fprintf(f, '%s,%s,%f,%f,%f,%f,%f,%f,%f,%f\n', ...
+                        outputFile, cellName, avgSpikeRate, tcPeakSpikeRate, tcPeakVariable, r2, hmPeakSpikeRate, hmPeakVariable, hmPeakLag, mic);
+                
             end
             
             fclose(f);

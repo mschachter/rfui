@@ -36,6 +36,7 @@ classdef PreprocessingModel < handle
         selectedCells = {};
         
         generateOutputFile = 1;
+        outputDirectory = '';
     end
     
     %#########################################################################

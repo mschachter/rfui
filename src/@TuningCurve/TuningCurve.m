@@ -35,6 +35,9 @@ classdef TuningCurve < handle
         %the peak firing rate of the tuning curve
         peakRate
         
+        %the peak value of the binned variable
+        peakVariable
+        
         logVariable;
         
         logRate;
@@ -103,6 +106,9 @@ classdef TuningCurve < handle
         %the peak firing rate of the tuning curve
         itsPeakRate;
         
+        %value of binned variable at peak rate
+        itsPeakVariable
+        
         %number of bins for computation
         itsNumBins;
         
@@ -121,7 +127,7 @@ classdef TuningCurve < handle
         
         itsLogVariable;
         
-        itsLogRate;
+        itsLogRate;        
     end
     
     %#########################################################################
@@ -201,6 +207,15 @@ classdef TuningCurve < handle
             ret = obj.itsPeakRate;
         end
         
+        %called when peakRate is accessed
+        function ret = get.peakVariable(obj)
+            if (obj.updateData)
+                computeTuningCurve(obj);
+                obj.updateData = 0;
+            end
+            ret = obj.itsPeakVariable;
+        end
+        
         %called when timeOffset is accessed
         function ret = get.timeOffset(obj)
             if (obj.updateData)
@@ -231,7 +246,7 @@ classdef TuningCurve < handle
         
         function ret = get.logRate(obj)
             ret = obj.itsLogRate;
-        end
+        end        
     end
     
     %#########################################################################
@@ -400,6 +415,7 @@ classdef TuningCurve < handle
             
             %for each cell, compute the spline
             obj.itsPeakRate = zeros(1, length(obj.selectedCells));
+            obj.itsPeakVariable = zeros(1, length(obj.selectedCells));
             obj.itsSplineFits = CSFit.empty(0,length(obj.selectedCells));
             for cellIndex = 1:numCells
                 cellNum = obj.selectedCells(cellIndex);
@@ -460,8 +476,11 @@ classdef TuningCurve < handle
                     zc = [obj.itsBinnedVariable(1), obj.itsBinnedVariable(end)];
                 end
                 
-                mx = ppval(currSpline, zc);
-                obj.itsPeakRate(cellIndex) = max(mx);
+                mvals = ppval(currSpline, zc);
+                [peakRate, peakIndex] = max(obj.itsAverageSpikeRate(cellIndex, :));
+                
+                obj.itsPeakVariable(cellIndex) = obj.itsBinnedVariable(peakIndex);
+                obj.itsPeakRate(cellIndex) = peakRate;
                 
                 %broadcast event that tuning curve was fit for cell
                 notify(obj,'TuningCurveJustFit', TuningCurveJustFitEventData(obj.expData.cellNames{cellNum}, cellIndex));

@@ -78,14 +78,12 @@ classdef ComputingCurveController < handle
             delete(hmlh);
             
             obj.itsHeatMap = hm;                        
-            
-            %{
+                        
             if obj.itsPreprocModel.generateOutputFile
                 set(viewHandles.StatusText, 'String', 'Generating output file...');
-                ofg = OutputFileGenerator(obj.itsPreprocessingModel, obj.itsExpData, tc, hm);
+                ofg = OutputFileGenerator(obj.itsPreprocModel, obj.itsExpData, tc, hm);
                 ofg.generate();                
-            end
-            %}
+            end            
             
         end
                 

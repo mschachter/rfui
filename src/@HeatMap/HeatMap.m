@@ -33,6 +33,8 @@ classdef HeatMap < handle
         %the peak firing rate at the best lag for each cell
         peakRate
         
+        peakVariable
+        
         %the MIC metric at the best lag for each cell
         MIC
     end
@@ -81,6 +83,9 @@ classdef HeatMap < handle
         
         %the peak firing rate at the best lag for each cell
         itsPeakRate;
+        
+        %the variable value for the peak firing rate at the best lag for each cell
+        itsPeakVariable;
         
         %the MIC metric at the best lag for each cell
         itsMIC;
@@ -165,6 +170,15 @@ classdef HeatMap < handle
                 obj.updateData = 0;
             end
             ret = obj.itsPeakRate;
+        end
+        
+        %called when peakVariable is accessed
+        function ret = get.peakVariable(obj)
+            if (obj.updateData)
+                computeHeatMap(obj);
+                obj.updateData = 0;
+            end
+            ret = obj.itsPeakVariable;
         end
         
         %called when peakRate is accessed
@@ -307,7 +321,8 @@ classdef HeatMap < handle
             end
             
             obj.itsPeakRate = zeros(length(tc.selectedCells), length(lags));
-            obj.itsMIC = zeros(1,length(tc.selectedCells));
+            peakVariable = zeros(length(tc.selectedCells), length(lags));
+            obj.itsMIC = zeros(1,length(tc.selectedCells));                        
             for (lagNum = 1:length(lags))
                 tc.timeOffset = lags(lagNum);
                 for (currCell = 1:length(tc.selectedCells))
@@ -323,16 +338,22 @@ classdef HeatMap < handle
                     end
                     
                 end
-                obj.itsPeakRate(:, lagNum) = tc.peakRate'; % a 1 x cells array of peak firing rates
+                obj.itsPeakRate(:, lagNum) = tc.peakRate'; % a 1 x cells array of peak firing rates                
+                peakVariable(:, lagNum) = tc.peakVariable';
                 %broadcast event that tuning curve was fit for lag
                 notify(obj,'HeatMapJustFit', HeatMapJustFitEventData(lagNum));    
             end
             
-            %compute peakRate for each cell and optimal lag
+            %compute peakRate for each cell and optimal lag            
             [obj.itsPeakRate, obj.itsOptimalLag] = max(obj.itsPeakRate, [], 2);
             obj.itsPeakRate = obj.itsPeakRate';
+            obj.itsPeakVariable = zeros(length(tc.selectedCells), 1);
+            for k = 1:length(obj.itsOptimalLag)
+                obj.itsPeakVariable(k) = peakVariable(k, obj.itsOptimalLag(k));
+            end            
             obj.itsOptimalLag = obj.itsOptimalLag';
-            obj.itsOptimalLag = lags(obj.itsOptimalLag);
+            obj.itsOptimalLag = lags(obj.itsOptimalLag);            
+            
             obj.updateData = 0;            
         end
     end    

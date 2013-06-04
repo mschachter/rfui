@@ -132,6 +132,7 @@ if ~isnumeric(ifile)
     outputDir = fullfile(lastPath, 'output');    
     [status,message,messageid] = mkdir(outputDir);
     set(handles.OutputDirectoryEdit, 'String', outputDir);
+    mvcModel.outputDirectory = outputDir;
 end
 
 
