@@ -12,7 +12,7 @@ classdef PreprocessingModel < handle
     %#########################################################################
     properties (GetAccess = public, SetAccess = public)
         inputFile = 'Click browse to select file.';
-        cellPattern = 'sig*';
+        cellPattern = 'sig';
         
         spikeRateWindowSize = 0.010;
         spikeRateWindowType = 'Gaussian';

@@ -35,7 +35,8 @@ function readDataFromFile(obj, filePathStr, cellExprStr)
             continue;
         end
         
-        matchStart = regexp(cName, cellExprStr, 'once');
+        rexpr = sprintf('(%s)', cellExprStr);
+        matchStart = regexp(cName, rexpr, 'once');
         if ~isempty(matchStart)
             %store as a string - SpikeData pair
             obj.cellDataMap(cName) = SpikeData(allData.data(:, colNum), startTime);

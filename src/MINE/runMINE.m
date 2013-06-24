@@ -24,7 +24,7 @@ outputPath = fullfile(outputPath, 'output.txt');
 
 %run the MINE software
 jarPath = fullfile(minePath, 'MINE.jar');
-cmd = sprintf('java -jar %s %s -allPairs', jarPath, inputPath);
+cmd = sprintf('java -jar "%s" "%s" -allPairs', jarPath, inputPath);
 system(cmd);
 
 R = dlmread([inputPath,',allpairs,cv=0.0,B=n^0.6,Results.csv'],',',[1 2 1 2]);

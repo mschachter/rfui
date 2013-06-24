@@ -44,7 +44,7 @@ classdef PreprocessingController < handle
             
             [iipath,filename,fileext] = fileparts(preprocModel.inputFile);
             set(viewHandles.SelectFileText, 'String', [filename fileext]);            
-            set(viewHandles.CellPatternEdit, 'String', 'sig*');
+            set(viewHandles.CellPatternEdit, 'String', preprocModel.cellPattern);
 
             set(viewHandles.SpikeRateWindowSizeEdit, 'String', num2str(preprocModel.spikeRateWindowSize));
             set(viewHandles.SpikeRateWindowSizeEdit, 'Value', preprocModel.spikeRateWindowSize);
