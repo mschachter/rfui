@@ -155,13 +155,13 @@ classdef SpikeData < handle
     %#########################################################################
     methods (Access = private)
         %get the spike times as a vector of spike counts at samplingResolution
-        function createSpikeCountVector(obj)
-            times = floor(obj.itsSpikeTimes*obj.itsSamplingResolution);
-            obj.itsSpikeCount = zeros(1, times(end)+1);
-            utimes = unique(times);
-            count = histc(times, utimes);
-            obj.itsSpikeCount(utimes+1) = count;
-            obj.itsTimeStamp = (0:(length(obj.itsSpikeCount)-1))./obj.itsSamplingResolution;
+        function createSpikeCountVector(obj)            
+            bins = floor(obj.itsSpikeTimes / obj.itsSamplingResolution);            
+            obj.itsSpikeCount = zeros(1, max(bins)+1);
+            ubins = unique(bins);
+            count = histc(bins, ubins);
+            obj.itsSpikeCount(ubins+1) = count;
+            obj.itsTimeStamp = (0:(length(obj.itsSpikeCount)-1))*obj.itsSamplingResolution;
             obj.itsTimeStamp = obj.itsTimeStamp + obj.itsRecordingStartTime;
         end
         
@@ -189,7 +189,7 @@ classdef SpikeData < handle
     %#########################################################################
     methods (Access = public)
         %create a new SpikeData object from spike times, assuming units are in seconds.
-        function newSD = SpikeData(newSpikeTimes, recordingStartTime)
+        function newSD = SpikeData(newSpikeTimes, recordingStartTime, samplingResolution)
             if ((nargin < 1) || (~isa(newSpikeTimes, 'double')))
                 error('argument must of an array of doubles representing spike times');    
             end 
@@ -202,7 +202,12 @@ classdef SpikeData < handle
             newSD.updateSpikeRate = 1;
         
             %private versions of dependent
-            newSD.itsSamplingResolution = 1000; %in Hz
+            if nargin < 3
+                newSD.itsSamplingResolution = 1000; %in Hz
+            else
+                newSD.itsSamplingResolution = samplingResolution;
+            end
+                
             newSD.itsSpikeRateType = 'Gaussian';
             newSD.itsSpikeRateFilterWidth = .015; %in seconds
             newSD.itsSpikeTimes = [];
