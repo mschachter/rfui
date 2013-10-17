@@ -17,7 +17,6 @@ function results = fitDecoder(expData, varName, desiredDt, transform)
     maxt = max(t);
     mint = min(t);
     dt = diff(t);
-    udt = unique(dt);
     
     %% get variable, interpolate to produce uniform sampling times
     y = expData.getVarByName(varName);    
@@ -61,9 +60,10 @@ function results = fitDecoder(expData, varName, desiredDt, transform)
     strfData(spikeRates, y', groupIndex);
 
     %% Initialize a linear model that extends back in time
-    lagTime = 10; % in seconds
-    strfLength = round(lagTime / desiredDt);
-    strfDelays = 0:(strfLength-1);
+    lagTime = 5; % in seconds
+    strfLength = round(lagTime*2 / desiredDt);
+    halfLength = round(strfLength / 2);
+    strfDelays = -halfLength:halfLength;
     modelParams = linInit(numCells, strfDelays);
 
     %% initialize optimizer

@@ -18,7 +18,8 @@ function readDataFromFile(obj, filePathStr, cellExprStr)
     for (colNum = 1:length(allData.colheaders))
         cName = allData.colheaders{colNum};
         if (strcmpi(cName, 'Recording time'))
-            obj.recordingTime = allData.data(:, colNum);
+            d = allData.data(:, colNum);
+            obj.recordingTime = d(~isnan(d));
             startTime = obj.recordingTime(1);
             
         end
@@ -42,7 +43,9 @@ function readDataFromFile(obj, filePathStr, cellExprStr)
             obj.cellDataMap(cName) = SpikeData(allData.data(:, colNum), startTime);
         else            
             %store as a string - vector of doubles pair
-            obj.varDataMap(cName) = allData.data(:, colNum);
+            %obj.varDataMap(cName) = allData.data(:, colNum);
+            d = allData.data(:, colNum);
+            obj.varDataMap(cName) = d(~isnan(d));
         end        
     end
 end

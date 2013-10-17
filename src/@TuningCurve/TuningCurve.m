@@ -405,12 +405,12 @@ classdef TuningCurve < handle
             
             %transform variables if requested
             if obj.logVariable
-                obj.itsBinnedVariable = log(obj.itsBinnedVariable);         
-                obj.itsBinnedVariable(isinf(obj.itsBinnedVariable)) = nan;
+                nzi = obj.itsBinnedVariable > 0;
+                obj.itsBinnedVariable(nzi) = log(obj.itsBinnedVariable(nzi));
             end
             if obj.logRate
-                obj.itsAverageSpikeRate = log(obj.itsAverageSpikeRate);
-                obj.itsAverageSpikeRate(isinf(obj.itsAverageSpikeRate)) = nan;
+                nzi = obj.itsAverageSpikeRate > 0;
+                obj.itsAverageSpikeRate(nzi) = log(obj.itsAverageSpikeRate(nzi));
             end            
             
             %for each cell, compute the spline
